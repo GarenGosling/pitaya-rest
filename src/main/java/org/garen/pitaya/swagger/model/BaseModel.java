@@ -2,6 +2,10 @@ package org.garen.pitaya.swagger.model;
 
 import org.springframework.http.HttpStatus;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * 模板业务类
  *
@@ -102,5 +106,12 @@ public class BaseModel {
         responseModel.setCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
         responseModel.setMessage(msg);
         return responseModel;
+    }
+
+    public Map page(List list , int count){
+        Map map 			            = new HashMap();
+        map.put("recordsTotal", 		count);
+        map.put("data",                 list);
+        return map;
     }
 }
