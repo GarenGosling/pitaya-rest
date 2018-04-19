@@ -226,7 +226,7 @@ public class SysUserManage extends BaseManage<Long>{
         dist.setCode(buildCode());
         dist.setNickName(buildNickName(sysUser.getNickName(), dist.getCode()));
         dist.setRealName(sysUser.getRealName());
-        dist.setPassword(buildPassword(sysUser.getPassword()));
+        dist.setPassword(buildPassword("111"));
         dist.setPhone(sysUser.getPhone());
         dist.setIdNumber(sysUser.getIdNumber());
         dist.setProvince(sysUser.getProvince());
