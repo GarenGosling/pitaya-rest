@@ -65,6 +65,22 @@ public class SysUserController extends BaseModel {
         }
     }
 
+    @ApiOperation(value = "编辑", nickname = "save", notes = "编辑", response = ResponseModel.class, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successful response", response = ResponseModel.class) })
+    @RequestMapping(value = "/modify",
+            produces = { "application/json" },
+            consumes = { "application/json" },
+            method = RequestMethod.POST)
+    ResponseEntity<ResponseModel> modify(@ApiParam(value = "编辑") @Valid @RequestBody SysUser sysUser){
+        sysUserValid.validModify(sysUser);
+        boolean save = sysUserManage.save(sysUser);
+        if(save){
+            return new ResponseEntity<ResponseModel>(successModel("新增用户成功"), HttpStatus.OK);
+        }else{
+            return new ResponseEntity<ResponseModel>(successModel("新增用户失败"), HttpStatus.OK);
+        }
+    }
 
 
 }

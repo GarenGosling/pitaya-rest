@@ -82,6 +82,18 @@ public class SysUserManage extends BaseManage<Long>{
     }
 
     /**
+     * 编码查询
+     * @param code
+     * @return
+     */
+    public SysUser getByCode(String code){
+        if(StringUtils.isBlank(code)){
+            return null;
+        }
+        return getSingleByParamsOr(code, null, null, null, null, null, null);
+    }
+
+    /**
      * 昵称查询
      * @param nickName
      * @return
@@ -90,7 +102,7 @@ public class SysUserManage extends BaseManage<Long>{
         if(StringUtils.isBlank(nickName)){
             return null;
         }
-        return getSingleByParamsOr(nickName, null, null, null, null, null);
+        return getSingleByParamsOr(null, nickName, null, null, null, null, null);
     }
 
     /**
@@ -102,7 +114,7 @@ public class SysUserManage extends BaseManage<Long>{
         if(StringUtils.isBlank(phone)){
             return null;
         }
-        return getSingleByParamsOr(null, phone, null, null, null, null);
+        return getSingleByParamsOr(null,null, phone, null, null, null, null);
     }
 
     /**
@@ -114,7 +126,7 @@ public class SysUserManage extends BaseManage<Long>{
         if(StringUtils.isBlank(idNumber)){
             return null;
         }
-        return getSingleByParamsOr(null, null, idNumber, null, null, null);
+        return getSingleByParamsOr(null,null, null, idNumber, null, null, null);
     }
 
     /**
@@ -126,7 +138,7 @@ public class SysUserManage extends BaseManage<Long>{
         if(StringUtils.isBlank(wechat)){
             return null;
         }
-        return getSingleByParamsOr(null, null, null, wechat, null, null);
+        return getSingleByParamsOr(null,null, null, null, wechat, null, null);
     }
 
     /**
@@ -138,7 +150,7 @@ public class SysUserManage extends BaseManage<Long>{
         if(StringUtils.isBlank(qq)){
             return null;
         }
-        return getSingleByParamsOr(null, null, null, null, qq, null);
+        return getSingleByParamsOr(null,null, null, null, null, qq, null);
     }
 
     /**
@@ -150,7 +162,7 @@ public class SysUserManage extends BaseManage<Long>{
         if(StringUtils.isBlank(email)){
             return null;
         }
-        return getSingleByParamsOr(null, null, null, null, email, null);
+        return getSingleByParamsOr(null,null, null, null, null, email, null);
     }
 
     /**
@@ -163,8 +175,8 @@ public class SysUserManage extends BaseManage<Long>{
      * @param email
      * @return
      */
-    public SysUser getSingleByParamsOr(String nickName, String phone, String idNumber, String wechat, String qq, String email){
-        List<SysUser> listByParamsOr = getListByParamsOr(nickName, phone, idNumber, wechat, qq, email);
+    public SysUser getSingleByParamsOr(String code, String nickName, String phone, String idNumber, String wechat, String qq, String email){
+        List<SysUser> listByParamsOr = getListByParamsOr(code, nickName, phone, idNumber, wechat, qq, email);
         if(!CollectionUtils.isEmpty(listByParamsOr) && listByParamsOr.size() > 0){
             return listByParamsOr.get(0);
         }
@@ -181,9 +193,12 @@ public class SysUserManage extends BaseManage<Long>{
      * @param email
      * @return
      */
-    public List<SysUser> getListByParamsOr(String nickName, String phone, String idNumber, String wechat, String qq, String email){
+    public List<SysUser> getListByParamsOr(String code, String nickName, String phone, String idNumber, String wechat, String qq, String email){
         SysUserQuery query = new SysUserQuery();
         SysUserQuery.Criteria criteria = query.or();
+        if(StringUtils.isNotBlank(code)){
+            criteria.andCodeEqualTo(code);
+        }
         if(StringUtils.isNotBlank(nickName)){
             criteria.andNickNameEqualTo(nickName);
         }
