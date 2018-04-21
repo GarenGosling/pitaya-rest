@@ -5,6 +5,7 @@ import org.apache.ibatis.session.RowBounds;
 import org.garen.pitaya.mybatis.domain.SysUser;
 import org.garen.pitaya.mybatis.domain.SysUserQuery;
 import org.garen.pitaya.mybatis.service.SysUserService;
+import org.garen.pitaya.swagger.model.SysUserSearch;
 import org.garen.pitaya.util.MD5Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,58 +28,51 @@ public class SysUserManage extends BaseManage<Long>{
 
     /**
      * 分页构建query
-     * @param code
-     * @param nickName
-     * @param realName
-     * @param phone
+     * @param sysUserSearch
      * @return
      */
-    public SysUserQuery buildQuery(String code,String nickName,String realName,String phone){
+    public SysUserQuery buildQuery(SysUserSearch sysUserSearch){
         SysUserQuery query = new SysUserQuery();
         SysUserQuery.Criteria criteria = query.createCriteria();
-            if(StringUtils.isNotBlank(code)){
-                criteria.andCodeEqualTo(code.trim());
+            if(StringUtils.isNotBlank(sysUserSearch.getCode())){
+                criteria.andCodeEqualTo(sysUserSearch.getCode().trim());
             }
-            if(StringUtils.isNotBlank(nickName)){
-                criteria.andNickNameEqualTo(nickName.trim());
+            if(StringUtils.isNotBlank(sysUserSearch.getNickName())){
+                criteria.andNickNameEqualTo(sysUserSearch.getNickName().trim());
             }
-            if(StringUtils.isNotBlank(realName)){
-                criteria.andRealNameLike("%"+realName.trim()+"%");
+            if(StringUtils.isNotBlank(sysUserSearch.getRealName())){
+                criteria.andRealNameLike("%"+sysUserSearch.getRealName().trim()+"%");
             }
-            if(StringUtils.isNotBlank(phone)){
-                criteria.andPhoneEqualTo(phone.trim());
+            if(StringUtils.isNotBlank(sysUserSearch.getPhone())){
+                criteria.andPhoneEqualTo(sysUserSearch.getPhone().trim());
             }
         return query;
     }
 
     /**
      * 分页列表
-     * @param start
-     * @param length
-     * @param code
-     * @param nickName
-     * @param realName
-     * @param phone
+     * @param sysUserSearch
      * @return
      */
-    public List<SysUser> getByPage(Integer start,Integer length,String code,String nickName,String realName,String phone){
-        start = (start == null?0:start);
-        length = (length == null?10:length);
-        SysUserQuery query = buildQuery(code, nickName, realName, phone);
+    public List<SysUser> getByPage(SysUserSearch sysUserSearch){
+        if(sysUserSearch.getStart() == null){
+            sysUserSearch.setStart(0);
+        }
+        if(sysUserSearch.getLength() == null){
+            sysUserSearch.setLength(10);
+        }
+        SysUserQuery query = buildQuery(sysUserSearch);
         query.setOrderByClause("id desc");
-        return getService().findBy(new RowBounds(start, length), query);
+        return getService().findBy(new RowBounds(sysUserSearch.getStart(), sysUserSearch.getLength()), query);
     }
 
     /**
      * 分页总数量
-     * @param code
-     * @param nickName
-     * @param realName
-     * @param phone
+     * @param sysUserSearch
      * @return
      */
-    public int getPageCount(String code,String nickName,String realName,String phone) {
-        return getService().countByExample(buildQuery(code, nickName, realName, phone));
+    public int getPageCount(SysUserSearch sysUserSearch) {
+        return getService().countByExample(buildQuery(sysUserSearch));
     }
 
     /**
@@ -219,51 +213,7 @@ public class SysUserManage extends BaseManage<Long>{
         }
         return getService().findBy(query);
     }
-    /**
-     * 新增
-     * @param sysUser
-     * @return
-     */
-    public boolean save(org.garen.pitaya.swagger.model.SysUser sysUser){
-        SysUser dist = buildSysUser(sysUser);
-        int save = getService().save(dist);
-        if(save == 1){
-            return true;
-        }
-        return false;
-    }
 
-    private SysUser buildSysUser(org.garen.pitaya.swagger.model.SysUser sysUser){
-        if(sysUser == null){
-            return null;
-        }
-        SysUser dist = new SysUser();
-        dist.setCode(buildCode());
-        dist.setNickName(buildNickName(sysUser.getNickName(), dist.getCode()));
-        dist.setRealName(sysUser.getRealName());
-        dist.setPassword(buildPassword("111"));
-        dist.setPhone(sysUser.getPhone());
-        dist.setIdNumber(sysUser.getIdNumber());
-        dist.setProvince(sysUser.getProvince());
-        dist.setCity(sysUser.getCity());
-        dist.setWechat(sysUser.getWechat());
-        dist.setQq(sysUser.getQq());
-        dist.setEmail(sysUser.getEmail());
-        dist.setRoles(sysUser.getRoles());
-        dist.setCreateTime(new Date());
-        return dist;
-    }
 
-    private String buildCode(){
-        return UUID.randomUUID().toString();
-    }
-    private String buildNickName(String nickName, String code){
-        if(StringUtils.isBlank(nickName)){
-            return code;
-        }
-        return nickName;
-    }
-    private String buildPassword(String password){
-        return MD5Util.getMD5String(password);
-    }
+
 }

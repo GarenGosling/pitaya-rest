@@ -79,6 +79,12 @@ public class BaseModel {
         responseModel.setMessage(msg);
         return responseModel;
     }
+    public ResponseModel badRequestModel(){
+        ResponseModel responseModel = new ResponseModel();
+        responseModel.setCode(HttpStatus.BAD_REQUEST.value());
+        responseModel.setMessage("操作失败");
+        return responseModel;
+    }
 
     /**
      * 异常模板

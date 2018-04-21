@@ -186,4 +186,13 @@ public class DateUtil {
         return parseTime(l);
     }
 
+    /**
+     * 当前时间
+     * @param format
+     * @return
+     */
+    public static String now(String format){
+        SimpleDateFormat sdf = new SimpleDateFormat(format);
+        return sdf.format(new Date());
+    }
 }

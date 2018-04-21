@@ -6,11 +6,9 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
 import org.garen.pitaya.service.SysUserManage;
+import org.garen.pitaya.service.transfer.SysUserTransfer;
 import org.garen.pitaya.swagger.api.valid.SysUserValid;
-import org.garen.pitaya.swagger.model.BaseModel;
-import org.garen.pitaya.swagger.model.ResponseModel;
-import org.garen.pitaya.swagger.model.SuccessModel;
-import org.garen.pitaya.swagger.model.SysUser;
+import org.garen.pitaya.swagger.model.*;
 import org.garen.pitaya.util.IdNumValidUtil;
 import org.garen.pitaya.util.PhoneValidUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,55 +30,68 @@ public class SysUserController extends BaseModel {
     SysUserManage sysUserManage;
     @Autowired
     SysUserValid sysUserValid;
+    @Autowired
+    SysUserTransfer sysUserTransfer;
 
-    @ApiOperation(value = "分页查询", nickname = "getOrderByPage", notes = "分页查询", response = ResponseModel.class, tags={  })
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "response", response = ResponseModel.class)})
-    @RequestMapping(value = "/page", method = RequestMethod.GET)
-    ResponseEntity<ResponseModel> getOrderByPage(@ApiParam(value = "分页开始索引") @Valid @RequestParam(value = "start", required = false) Integer start,
-                                                 @ApiParam(value = "每页数量") @Valid @RequestParam(value = "length", required = false) Integer length,
-                                                 @ApiParam(value = "用户编码") @Valid @RequestParam(value = "code", required = false) String code,
-                                                 @ApiParam(value = "昵称") @Valid @RequestParam(value = "nickName", required = false) String nickName,
-                                                 @ApiParam(value = "姓名") @Valid @RequestParam(value = "realName", required = false) String realName,
-                                                 @ApiParam(value = "手机号") @Valid @RequestParam(value = "phone", required = false) String phone){
-
-        List<org.garen.pitaya.mybatis.domain.SysUser> list = sysUserManage.getByPage(start, length, code, nickName, realName, phone);
-        int totalCount = sysUserManage.getPageCount(code, nickName, realName, phone);
-        return new ResponseEntity<ResponseModel>(successModel("查询成功",page(list, totalCount)), HttpStatus.OK);
+    @ApiOperation(value = "分页查询", nickname = "getByPage", notes = "分页查询", response = ResponseModel.class, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "response", response = ResponseModel.class) })
+    @RequestMapping(value = "/page",
+            produces = { "application/json" },
+            consumes = { "application/json" },
+            method = RequestMethod.POST)
+    ResponseEntity<ResponseModel> getByPage(@ApiParam(value = "查询") @Valid @RequestBody SysUserSearch sysUserSearch){
+        if(sysUserSearch == null){
+            sysUserSearch = new SysUserSearch();
+        }
+        List<org.garen.pitaya.mybatis.domain.SysUser> list = sysUserManage.getByPage(sysUserSearch);
+        int totalCount = sysUserManage.getPageCount(sysUserSearch);
+        return new ResponseEntity<ResponseModel>(successModel("查询",page(list, totalCount)), HttpStatus.OK);
     }
 
     @ApiOperation(value = "新增", nickname = "save", notes = "新增 ", response = ResponseModel.class, tags={  })
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful response", response = ResponseModel.class) })
+            @ApiResponse(code = 200, message = "response", response = ResponseModel.class) })
     @RequestMapping(value = "/save",
             produces = { "application/json" },
             consumes = { "application/json" },
             method = RequestMethod.POST)
     ResponseEntity<ResponseModel> save(@ApiParam(value = "新增") @Valid @RequestBody SysUser sysUser){
         sysUserValid.validSave(sysUser);
-        boolean save = sysUserManage.save(sysUser);
-        if(save){
-            return new ResponseEntity<ResponseModel>(successModel("新增用户成功"), HttpStatus.OK);
+        org.garen.pitaya.mybatis.domain.SysUser dist = sysUserTransfer.saveMTD(sysUser);
+        int i = sysUserManage.create(dist);
+        if(i==1){
+            return new ResponseEntity<ResponseModel>(successModel(), HttpStatus.OK);
         }else{
-            return new ResponseEntity<ResponseModel>(successModel("新增用户失败"), HttpStatus.OK);
+            return new ResponseEntity<ResponseModel>(badRequestModel(), HttpStatus.OK);
         }
     }
 
-    @ApiOperation(value = "编辑", nickname = "save", notes = "编辑", response = ResponseModel.class, tags={  })
+    @ApiOperation(value = "编辑", nickname = "modify", notes = "编辑", response = ResponseModel.class, tags={  })
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful response", response = ResponseModel.class) })
+            @ApiResponse(code = 200, message = "response", response = ResponseModel.class) })
     @RequestMapping(value = "/modify",
             produces = { "application/json" },
             consumes = { "application/json" },
-            method = RequestMethod.POST)
+            method = RequestMethod.PUT)
     ResponseEntity<ResponseModel> modify(@ApiParam(value = "编辑") @Valid @RequestBody SysUser sysUser){
         sysUserValid.validModify(sysUser);
-        boolean save = sysUserManage.save(sysUser);
-        if(save){
-            return new ResponseEntity<ResponseModel>(successModel("新增用户成功"), HttpStatus.OK);
-        }else{
-            return new ResponseEntity<ResponseModel>(successModel("新增用户失败"), HttpStatus.OK);
-        }
+        org.garen.pitaya.mybatis.domain.SysUser dist = sysUserTransfer.modifyMTD(sysUser);
+        sysUserManage.modify(dist);
+        return new ResponseEntity<ResponseModel>(successModel(), HttpStatus.OK);
     }
 
-
+    @ApiOperation(value = "删除", nickname = "delete", notes = "删除", response = ResponseModel.class, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "response", response = ResponseModel.class) })
+    @RequestMapping(value = "/delete",
+            method = RequestMethod.DELETE)
+    ResponseEntity<ResponseModel> delete(@ApiParam(value = "主键") @Valid @RequestParam(value = "id", required = true) Long id){
+        int i = sysUserManage.removeById(id);
+        if(i == 1){
+            return new ResponseEntity<ResponseModel>(successModel(), HttpStatus.OK);
+        }else{
+            return new ResponseEntity<ResponseModel>(badRequestModel(), HttpStatus.OK);
+        }
+    }
 }
