@@ -85,10 +85,10 @@ public class SysUserManage extends BaseManage<Long>{
             sql += " and code = '" + EsapiUtil.sql(code) + "'";
         }
         if(StringUtils.isNotBlank(nickName)){
-            sql += " and nickName = '" + EsapiUtil.sql(nickName) + "'";
+            sql += " and nick_name = '" + EsapiUtil.sql(nickName) + "'";
         }
         if(StringUtils.isNotBlank(realName)){
-            sql += " and realName = '" + EsapiUtil.sql(realName) + "'";
+            sql += " and real_name = '" + EsapiUtil.sql(realName) + "'";
         }
         if(StringUtils.isNotBlank(phone)){
             sql += " and phone = '" + EsapiUtil.sql(phone) + "'";
