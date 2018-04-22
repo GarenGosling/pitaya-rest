@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -92,6 +93,37 @@ public class SysUserController extends BaseModel {
             return new ResponseEntity<ResponseModel>(successModel(), HttpStatus.OK);
         }else{
             return new ResponseEntity<ResponseModel>(badRequestModel(), HttpStatus.OK);
+        }
+    }
+
+    @ApiOperation(value = "批量删除", nickname = "delete", notes = "批量删除", response = ResponseModel.class, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "response", response = ResponseModel.class) })
+    @RequestMapping(value = "/remove",
+            method = RequestMethod.DELETE)
+    ResponseEntity<ResponseModel> remove(@ApiParam(value = "主键拼串") @Valid @RequestParam(value = "ids", required = true) String ids){
+        int count = 0;
+        List<String> failList = new ArrayList<>();
+        for(String id : ids.split(",")){
+            int i = sysUserManage.removeById(Long.parseLong(id));
+            if(i == 1){
+                count ++;
+            }else{
+                SysUser byId = sysUserManage.findById(Long.parseLong(id));
+                failList.add(byId.getNickName());
+            }
+        }
+        if(count == ids.split(",").length){
+            return new ResponseEntity<ResponseModel>(successModel(), HttpStatus.OK);
+        }else{
+            String failMsg = "删除失败项：";
+            for(int i=0;i<failList.size();i++){
+                failMsg += failList.get(i);
+                if(i<failList.size()-1){
+                    failMsg += "，";
+                }
+            }
+            return new ResponseEntity<ResponseModel>(badRequestModel(failMsg), HttpStatus.OK);
         }
     }
 }
