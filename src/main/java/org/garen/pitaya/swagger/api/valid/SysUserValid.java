@@ -2,8 +2,10 @@ package org.garen.pitaya.swagger.api.valid;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.garen.pitaya.enums.FileType;
 import org.garen.pitaya.exception.BadRequestException;
 import org.garen.pitaya.service.SysUserManage;
+import org.garen.pitaya.service.helper.FileHelper;
 import org.garen.pitaya.swagger.model.ResponseModel;
 import org.garen.pitaya.swagger.model.SysUser;
 import org.garen.pitaya.util.IdNumValidUtil;
@@ -12,12 +14,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Component
 public class SysUserValid {
 
     @Autowired
     SysUserManage sysUserManage;
+    @Autowired
+    FileHelper fileHelper;
 
     /**
      * 验证：新增接口
@@ -155,5 +166,95 @@ public class SysUserValid {
                 throw new BadRequestException("邮箱号已存在");
             }
         }
+    }
+
+    public void validImportExcel(MultipartFile multipartFile) throws IOException {
+        InputStream inputStream = inputStream = multipartFile.getInputStream();
+        if(fileHelper.getType(inputStream) != FileType.XLSX){
+            throw new BadRequestException("上传文件类型错误，只能上传一个.xlsx格式的Excel文件，且不超过2M");
+        }
+        if (multipartFile.getSize() > 2 * 1024 * 1024) {
+            throw new BadRequestException("导入文件大小不能超过 2MB");
+        }
+    }
+
+    public ImportExcelValidResponse validImportExcelRow(Integer rowNo, Map<Integer, String> map){
+        List<String> failMsgList = new ArrayList<>();
+        // 非空验证：姓名
+        if(StringUtils.isBlank(map.get(1))){
+            failMsgList.add("姓名为空");
+        }
+        // 非空验证：手机号
+        if(StringUtils.isBlank(map.get(2))){
+            failMsgList.add("手机号为空");
+        }
+        // 昵称
+        if(StringUtils.isNotBlank(map.get(0))){
+            org.garen.pitaya.mybatis.domain.SysUser byNickName = sysUserManage.getByNickName(map.get(0));
+            if(byNickName != null){
+                failMsgList.add("昵称已存在");
+            }
+        }
+        // 手机号
+        if(!PhoneValidUtil.isPhone(map.get(2))){
+            failMsgList.add("手机号有误");
+        }
+        org.garen.pitaya.mybatis.domain.SysUser byPhone = sysUserManage.getByPhone(map.get(2));
+        if(byPhone != null){
+            failMsgList.add("手机号已存在");
+        }
+        // 身份证
+        if(StringUtils.isNotBlank(map.get(3))){
+            if(!IdNumValidUtil.validID(map.get(3), false, false)){
+                failMsgList.add("身份证号有误");
+            }
+            org.garen.pitaya.mybatis.domain.SysUser byIdNumber = sysUserManage.getByIdNumber(map.get(3));
+            if(byIdNumber != null){
+                failMsgList.add("身份证号已存在");
+            }
+        }
+        // 微信
+        if(StringUtils.isNotBlank(map.get(6))){
+            org.garen.pitaya.mybatis.domain.SysUser byWechat = sysUserManage.getByWechat(map.get(6));
+            if(byWechat != null){
+                failMsgList.add("微信号已存在");
+            }
+        }
+        // QQ
+        if(StringUtils.isNotBlank(map.get(7))){
+            org.garen.pitaya.mybatis.domain.SysUser byQq = sysUserManage.getByQq(map.get(7));
+            if(byQq != null){
+                failMsgList.add("QQ号已存在");
+            }
+        }
+        // email
+        if(StringUtils.isNotBlank(map.get(8))){
+            if(map.get(8).indexOf('@')<1 || map.get(8).split("@").length>2){
+                failMsgList.add("邮箱号有误");
+            }
+            org.garen.pitaya.mybatis.domain.SysUser byEmail = sysUserManage.getByEmail(map.get(8));
+            if(byEmail != null){
+                failMsgList.add("邮箱号已存在");
+            }
+        }
+        ImportExcelValidResponse importExcelValidResponse = new ImportExcelValidResponse();
+        importExcelValidResponse.setRowNo(rowNo);
+        importExcelValidResponse.setData(map);
+        importExcelValidResponse.setRes("成功");
+        if(failMsgList.size() != 0){
+            importExcelValidResponse.setRes("失败");
+            StringBuilder sb = new StringBuilder();
+            for(int i=0;i<failMsgList.size();i++) {
+                sb.append(failMsgList.get(i));
+                if(i<failMsgList.size()-1){
+                    sb.append("，");
+                }
+                if(i == failMsgList.size() - 1){
+                    sb.append("。");
+                }
+            }
+            importExcelValidResponse.setMessage(sb.toString());
+        }
+        return importExcelValidResponse;
     }
 }

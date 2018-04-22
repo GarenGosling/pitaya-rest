@@ -30,6 +30,14 @@ public class BaseModel {
         return responseModel;
     }
 
+    public ResponseModel successModel(Object data){
+        ResponseModel responseModel = new ResponseModel();
+        responseModel.setCode(HttpStatus.OK.value());
+        responseModel.setMessage("操作成功");
+        responseModel.setData(data);
+        return responseModel;
+    }
+
     /**
      * 成功模板
      *

@@ -5,8 +5,14 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
+import org.garen.pitaya.enums.FileType;
+import org.garen.pitaya.exception.BadRequestException;
+import org.garen.pitaya.exception.BusinessException;
 import org.garen.pitaya.service.SysUserManage;
+import org.garen.pitaya.service.helper.FileHelper;
+import org.garen.pitaya.service.helper.POIHandler;
 import org.garen.pitaya.service.transfer.SysUserTransfer;
+import org.garen.pitaya.swagger.api.valid.ImportExcelValidResponse;
 import org.garen.pitaya.swagger.api.valid.SysUserValid;
 import org.garen.pitaya.swagger.model.*;
 import org.garen.pitaya.util.IdNumValidUtil;
@@ -15,8 +21,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +44,8 @@ public class SysUserController extends BaseModel {
     SysUserValid sysUserValid;
     @Autowired
     SysUserTransfer sysUserTransfer;
+    @Autowired
+    POIHandler poiHandler;
 
     @ApiOperation(value = "分页查询", nickname = "getByPage", notes = "分页查询", response = ResponseModel.class, tags={  })
     @ApiResponses(value = {
@@ -126,4 +139,48 @@ public class SysUserController extends BaseModel {
             return new ResponseEntity<ResponseModel>(badRequestModel(failMsg), HttpStatus.OK);
         }
     }
+
+    @ApiOperation(value = "文件上传", nickname = "importExcel", notes = "导入Excel格式的用户数据", response = ResponseModel.class, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "response", response = ResponseModel.class) })
+    @RequestMapping(value = "/importExcel",
+            produces = { "application/json" },
+            consumes = { "multipart/form-data" },
+            method = RequestMethod.POST)
+    ResponseEntity<ResponseModel> importExcel(@ApiParam(value = "excel文件") @RequestPart("file") MultipartFile file) {
+        try {
+            Map<String, List<ImportExcelValidResponse>> map = sysUserManage.importExcel(file);
+            return new ResponseEntity<ResponseModel>(successModel(map), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<ResponseModel>(badRequestModel(e.getMessage()), HttpStatus.OK);
+        }
+    }
+
+    @ApiOperation(value = "导出Excel", notes = "导出Excel格式的用户数据 ", response = SuccessModel.class, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "response", response = ResponseModel.class) })
+    @RequestMapping(value = "/exportExcel",
+            produces = { "application/json" },
+            method = RequestMethod.GET)
+    public ResponseEntity<ResponseModel> exportExcel(@ApiParam(value = "进件编号") @RequestParam(value = "code", required = false) String code,
+                                                     @ApiParam(value = "进件编号") @RequestParam(value = "nickName", required = false) String nickName,
+                                                     @ApiParam(value = "进件编号") @RequestParam(value = "realName", required = false) String realName,
+                                                     @ApiParam(value = "进件编号") @RequestParam(value = "phone", required = false) String phone,
+                                                     HttpServletResponse response){
+        try{
+            List<Map<String, Object>> maps = sysUserManage.getByParams(code, nickName, realName, phone);
+            List<SysUserExport> list = new ArrayList<>();
+            for(Map<String, Object> map : maps){
+                SysUserExport sysUserExport = sysUserTransfer.exportExcelETE(map);
+                list.add(sysUserExport);
+            }
+            String fileName = "用户信息";
+            String[] columnNames = {"用户名", "姓名（必填）", "手机号（必填）", "身份证号", "省份", "城市", "微信号", "QQ号", "邮箱", "角色"};
+            poiHandler.export(fileName, columnNames, list, response);
+            return new ResponseEntity<ResponseModel>(successModel(), HttpStatus.OK);
+        } catch(Exception e) {
+            return new ResponseEntity<ResponseModel>(badRequestModel(e.getMessage()), HttpStatus.OK);
+        }
+    }
+
 }

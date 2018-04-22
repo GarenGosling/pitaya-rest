@@ -4,10 +4,12 @@ import org.apache.commons.lang.StringUtils;
 import org.garen.pitaya.service.SysUserManage;
 import org.garen.pitaya.service.helper.SysUserHelper;
 import org.garen.pitaya.swagger.model.SysUser;
+import org.garen.pitaya.swagger.model.SysUserExport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.Map;
 
 /**
  * 转换辅助类
@@ -84,6 +86,39 @@ public class SysUserTransfer {
         if(StringUtils.isNotBlank(arg.getRoles())){
             dist.setRoles(arg.getRoles());
         }
+        return dist;
+    }
+
+    public org.garen.pitaya.mybatis.domain.SysUser importExcelETD(Map<Integer, String> map){
+        org.garen.pitaya.mybatis.domain.SysUser dist = new org.garen.pitaya.mybatis.domain.SysUser();
+        dist.setCode(sysUserHelper.createUserCode());
+        dist.setNickName(sysUserHelper.createNickName(map.get(0)));
+        dist.setRealName(map.get(1));
+        dist.setPassword(sysUserHelper.encodePassword("111"));
+        dist.setPhone(map.get(2));
+        dist.setIdNumber(map.get(3));
+        dist.setProvince(map.get(4));
+        dist.setCity(map.get(5));
+        dist.setWechat(map.get(6));
+        dist.setQq(map.get(7));
+        dist.setEmail(map.get(8));
+        dist.setRoles(map.get(9));
+        dist.setCreateTime(new Date());
+        return dist;
+    }
+
+    public SysUserExport exportExcelETE(Map<String, Object> map){
+        SysUserExport dist = new SysUserExport();
+        dist.setNickName(sysUserHelper.createNickName((String) map.get("nick_name")));
+        dist.setRealName((String) map.get("real_name"));
+        dist.setPhone((String) map.get("phone"));
+        dist.setIdNumber((String) map.get("id_number"));
+        dist.setProvince((String) map.get("province"));
+        dist.setCity((String) map.get("city"));
+        dist.setWechat((String) map.get("wechat"));
+        dist.setQq((String) map.get("qq"));
+        dist.setEmail((String) map.get("email"));
+        dist.setRoles((String) map.get("roles"));
         return dist;
     }
 
