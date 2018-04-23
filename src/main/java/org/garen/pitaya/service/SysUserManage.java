@@ -8,10 +8,10 @@ import org.garen.pitaya.mybatis.domain.SysUser;
 import org.garen.pitaya.mybatis.domain.SysUserQuery;
 import org.garen.pitaya.mybatis.service.SysUserService;
 import org.garen.pitaya.swagger.model.SysUserExport;
+import org.garen.pitaya.swagger.model.SysUserVo;
 import org.garen.pitaya.util.*;
-import org.garen.pitaya.transfer.SysUserTransfer;
-import org.garen.pitaya.swagger.model.ImportExcelResponse;
-import org.garen.pitaya.swagger.api.valid.SysUserValid;
+import org.garen.pitaya.swagger.model.ImportExcelResult;
+import org.garen.pitaya.valid.SysUserValid;
 import org.garen.pitaya.swagger.model.SysUserSearch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,15 +36,13 @@ public class SysUserManage extends BaseManage<Long>{
     SysUserValid sysUserValid;
     @Autowired
     POIHandler poiHandler;
-    @Autowired
-    SysUserTransfer sysUserTransfer;
 
     /**
      * 新增
      * @param sysUser
      * @return
      */
-    public boolean save(org.garen.pitaya.swagger.model.SysUser sysUser){
+    public boolean save(SysUserVo sysUser){
         // 校验入参
         sysUserValid.saveValid(sysUser);
         // 对象转化
@@ -70,7 +68,7 @@ public class SysUserManage extends BaseManage<Long>{
      * @param sysUser
      * @return
      */
-    public boolean update(org.garen.pitaya.swagger.model.SysUser sysUser){
+    public boolean update(SysUserVo sysUser){
         // 校验入参
         sysUserValid.updateValid(sysUser);
         // 对象转化
@@ -99,7 +97,7 @@ public class SysUserManage extends BaseManage<Long>{
             if(i == 1){
                 count ++;
             }else{
-                org.garen.pitaya.swagger.model.SysUser byId = findById(Long.parseLong(id));
+                SysUserVo byId = findById(Long.parseLong(id));
                 failList.add(byId.getNickName());
             }
         }
@@ -314,22 +312,22 @@ public class SysUserManage extends BaseManage<Long>{
      * @return
      * @throws IOException
      */
-    public Map<String, List<ImportExcelResponse>> importExcel(MultipartFile file){
-        Map<String, List<ImportExcelResponse>> result = new HashedMap();
+    public Map<String, List<ImportExcelResult>> importExcel(MultipartFile file){
+        Map<String, List<ImportExcelResult>> result = new HashedMap();
         sysUserValid.importExcelValid(file);
         List<Map<Integer, String>> rows = poiHandler.readExcel(file);
-        List<ImportExcelResponse> successList = new ArrayList<>();
-        List<ImportExcelResponse> failList = new ArrayList<>();
+        List<ImportExcelResult> successList = new ArrayList<>();
+        List<ImportExcelResult> failList = new ArrayList<>();
         if(rows.size() == 0){
             throw new BadRequestException("操作失败，原因：Excel无数据");
         }
         for(int i=0;i<rows.size();i++){
-            ImportExcelResponse importExcelResponse = sysUserValid.importExcelRowValid(i + 2, rows.get(i));
+            ImportExcelResult importExcelResponse = sysUserValid.importExcelRowValid(i + 2, rows.get(i));
             if("操作失败".equals(importExcelResponse.getRes())){
                 failList.add(importExcelResponse);
             } else {
                 Map<Integer, String> map = rows.get(i);
-                org.garen.pitaya.swagger.model.SysUser sysUser = new org.garen.pitaya.swagger.model.SysUser();
+                SysUserVo sysUser = new SysUserVo();
                 sysUser.setNickName(map.get(0));
                 sysUser.setRealName(map.get(1));
                 sysUser.setPhone(map.get(2));

@@ -2,7 +2,7 @@ package org.garen.pitaya.swagger.model;
 
 import java.util.Date;
 
-public class SysUser {
+public class SysUserVo {
     private Long id;
     private String code;
     private String nickName;
@@ -17,10 +17,10 @@ public class SysUser {
     private String email;
     private String roles;
 
-    public SysUser() {
+    public SysUserVo() {
     }
 
-    public SysUser(Long id, String code, String nickName, String realName, String password, String phone, String idNumber, String province, String city, String wechat, String qq, String email, String roles) {
+    public SysUserVo(Long id, String code, String nickName, String realName, String password, String phone, String idNumber, String province, String city, String wechat, String qq, String email, String roles) {
         this.id = id;
         this.code = code;
         this.nickName = nickName;

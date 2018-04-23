@@ -1,14 +1,13 @@
-package org.garen.pitaya.swagger.api.valid;
+package org.garen.pitaya.valid;
 
 import org.apache.commons.lang3.StringUtils;
 import org.garen.pitaya.enums.FileType;
 import org.garen.pitaya.exception.BadRequestException;
 import org.garen.pitaya.exception.BusinessException;
 import org.garen.pitaya.service.SysUserManage;
-import org.garen.pitaya.swagger.model.ImportExcelResponse;
-import org.garen.pitaya.swagger.model.SysUserSearch;
+import org.garen.pitaya.swagger.model.ImportExcelResult;
 import org.garen.pitaya.util.FileHandler;
-import org.garen.pitaya.swagger.model.SysUser;
+import org.garen.pitaya.swagger.model.SysUserVo;
 import org.garen.pitaya.util.IdNumValidUtil;
 import org.garen.pitaya.util.PhoneValidUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.rmi.server.ExportException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +30,7 @@ public class SysUserValid {
      * 验证：新增接口
      * @param sysUser
      */
-    public void saveValid(SysUser sysUser){
+    public void saveValid(SysUserVo sysUser){
         // 参数对象
         if(sysUser == null){
             throw new BadRequestException("新增用户不能为空");
@@ -100,7 +98,7 @@ public class SysUserValid {
      * 验证：编辑接口
      * @param sysUser
      */
-    public void updateValid(SysUser sysUser){
+    public void updateValid(SysUserVo sysUser){
         // 参数对象
         if(sysUser == null){
             throw new BadRequestException("编辑用户不能为空");
@@ -183,7 +181,7 @@ public class SysUserValid {
         }
     }
 
-    public ImportExcelResponse importExcelRowValid(Integer rowNo, Map<Integer, String> map){
+    public ImportExcelResult importExcelRowValid(Integer rowNo, Map<Integer, String> map){
         List<String> failMsgList = new ArrayList<>();
         // 非空验证：姓名
         if(StringUtils.isBlank(map.get(1))){
@@ -242,7 +240,7 @@ public class SysUserValid {
                 failMsgList.add("邮箱号已存在");
             }
         }
-        ImportExcelResponse importExcelValidResponse = new ImportExcelResponse();
+        ImportExcelResult importExcelValidResponse = new ImportExcelResult();
         importExcelValidResponse.setRowNo(rowNo);
         importExcelValidResponse.setData(map);
         importExcelValidResponse.setRes("操作成功");

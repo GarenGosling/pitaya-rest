@@ -5,8 +5,7 @@ import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang.StringUtils;
 import org.garen.pitaya.service.SysUserManage;
 import org.garen.pitaya.util.POIHandler;
-import org.garen.pitaya.transfer.SysUserTransfer;
-import org.garen.pitaya.swagger.api.valid.SysUserValid;
+import org.garen.pitaya.valid.SysUserValid;
 import org.garen.pitaya.swagger.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,8 +26,6 @@ public class SysUserController extends BaseModel {
     @Autowired
     SysUserValid sysUserValid;
     @Autowired
-    SysUserTransfer sysUserTransfer;
-    @Autowired
     POIHandler poiHandler;
 
     @ApiOperation(value = "分页查询", notes = "分页查询")
@@ -41,7 +38,7 @@ public class SysUserController extends BaseModel {
 
     @ApiOperation(value = "新增", notes = "新增 ")
     @RequestMapping(value = "/save", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    ResponseEntity<ResponseModel> save(@RequestBody SysUser sysUser){
+    ResponseEntity<ResponseModel> save(@RequestBody SysUserVo sysUser){
         if(sysUserManage.save(sysUser)){
             return new ResponseEntity<ResponseModel>(successModel(), HttpStatus.OK);
         }else{
@@ -51,7 +48,7 @@ public class SysUserController extends BaseModel {
 
     @ApiOperation(value = "编辑", notes = "编辑")
     @RequestMapping(value = "/update", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    ResponseEntity<ResponseModel> update(@RequestBody SysUser sysUser){
+    ResponseEntity<ResponseModel> update(@RequestBody SysUserVo sysUser){
         if(sysUserManage.update(sysUser)){
             return new ResponseEntity<ResponseModel>(successModel(), HttpStatus.OK);
         }else{
