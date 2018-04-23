@@ -1,18 +1,14 @@
 package org.garen.pitaya.swagger.api.valid;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.garen.pitaya.enums.FileType;
 import org.garen.pitaya.exception.BadRequestException;
 import org.garen.pitaya.service.SysUserManage;
-import org.garen.pitaya.service.helper.FileHelper;
-import org.garen.pitaya.swagger.model.ResponseModel;
+import org.garen.pitaya.util.FileHandler;
 import org.garen.pitaya.swagger.model.SysUser;
 import org.garen.pitaya.util.IdNumValidUtil;
 import org.garen.pitaya.util.PhoneValidUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,7 +24,7 @@ public class SysUserValid {
     @Autowired
     SysUserManage sysUserManage;
     @Autowired
-    FileHelper fileHelper;
+    FileHandler fileHelper;
 
     /**
      * 验证：新增接口

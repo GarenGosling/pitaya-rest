@@ -1,4 +1,4 @@
-package org.garen.pitaya.service.helper;
+package org.garen.pitaya.util;
 
 import org.apache.commons.lang3.StringUtils;
 import org.garen.pitaya.enums.FileType;
@@ -15,7 +15,7 @@ import java.io.InputStream;
  * @since v1.0
  */
 @Component
-public class FileHelper {
+public class FileHandler {
     /**
      * 判断文件类型
      *

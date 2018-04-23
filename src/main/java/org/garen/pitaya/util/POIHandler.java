@@ -1,4 +1,4 @@
-package org.garen.pitaya.service.helper;
+package org.garen.pitaya.util;
 
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang.StringUtils;

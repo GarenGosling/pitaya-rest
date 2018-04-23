@@ -1,10 +1,11 @@
-package org.garen.pitaya.service.transfer;
+package org.garen.pitaya.transfer;
 
 import org.apache.commons.lang.StringUtils;
 import org.garen.pitaya.service.SysUserManage;
-import org.garen.pitaya.service.helper.SysUserHelper;
 import org.garen.pitaya.swagger.model.SysUser;
 import org.garen.pitaya.swagger.model.SysUserExport;
+import org.garen.pitaya.util.MD5Util;
+import org.garen.pitaya.util.UniqueCodeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,8 +24,6 @@ public class SysUserTransfer {
 
     @Autowired
     SysUserManage sysUserManage;
-    @Autowired
-    SysUserHelper sysUserHelper;
 
     /**
      * 新增接口     Model -> DAO
@@ -33,10 +32,14 @@ public class SysUserTransfer {
      */
     public org.garen.pitaya.mybatis.domain.SysUser saveMTD(SysUser sysUser){
         org.garen.pitaya.mybatis.domain.SysUser dist = new org.garen.pitaya.mybatis.domain.SysUser();
-        dist.setCode(sysUserHelper.createUserCode());
-        dist.setNickName(sysUserHelper.createNickName(sysUser.getNickName()));
+        dist.setCode("ID-" + UniqueCodeUtil.idCode());
+        if(StringUtils.isBlank(sysUser.getNickName())){
+            dist.setNickName("N-" + UniqueCodeUtil.idCodeShort());
+        }else{
+            dist.setNickName(sysUser.getNickName());
+        }
         dist.setRealName(sysUser.getRealName());
-        dist.setPassword(sysUserHelper.encodePassword("111"));
+        dist.setPassword(MD5Util.getMD5String("111"));
         dist.setPhone(sysUser.getPhone());
         dist.setIdNumber(sysUser.getIdNumber());
         dist.setProvince(sysUser.getProvince());
@@ -91,10 +94,14 @@ public class SysUserTransfer {
 
     public org.garen.pitaya.mybatis.domain.SysUser importExcelETD(Map<Integer, String> map){
         org.garen.pitaya.mybatis.domain.SysUser dist = new org.garen.pitaya.mybatis.domain.SysUser();
-        dist.setCode(sysUserHelper.createUserCode());
-        dist.setNickName(sysUserHelper.createNickName(map.get(0)));
+        dist.setCode("ID-" + UniqueCodeUtil.idCode());
+        if(StringUtils.isBlank(map.get(0))){
+            dist.setNickName("N-" + UniqueCodeUtil.idCodeShort());
+        }else{
+            dist.setNickName(map.get(0));
+        }
         dist.setRealName(map.get(1));
-        dist.setPassword(sysUserHelper.encodePassword("111"));
+        dist.setPassword(MD5Util.getMD5String("111"));
         dist.setPhone(map.get(2));
         dist.setIdNumber(map.get(3));
         dist.setProvince(map.get(4));
@@ -109,7 +116,7 @@ public class SysUserTransfer {
 
     public SysUserExport exportExcelETE(Map<String, Object> map){
         SysUserExport dist = new SysUserExport();
-        dist.setNickName(sysUserHelper.createNickName((String) map.get("nick_name")));
+        dist.setNickName((String) map.get("nick_name"));
         dist.setRealName((String) map.get("real_name"));
         dist.setPhone((String) map.get("phone"));
         dist.setIdNumber((String) map.get("id_number"));
