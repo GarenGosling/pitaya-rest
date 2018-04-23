@@ -14,7 +14,6 @@ import java.io.InputStream;
  * @create 2018-04-22 15:24
  * @since v1.0
  */
-@Component
 public class FileHandler {
     /**
      * 判断文件类型
@@ -23,7 +22,7 @@ public class FileHandler {
      * @return
      * @throws IOException
      */
-    public FileType getType(InputStream is) throws IOException {
+    public static FileType getType(InputStream is) throws IOException {
         byte[] b = new byte[28];
         is.read(b, 0, 28);
         String fileHead = bytesToHexString(b);
@@ -43,7 +42,7 @@ public class FileHandler {
      * @param bytes
      * @return 16进制字符串
      */
-    private String bytesToHexString(byte[] bytes){
+    public static String bytesToHexString(byte[] bytes){
         // 验证
         if (bytes == null || bytes.length <= 0) {
             return null;

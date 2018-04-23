@@ -1,4 +1,4 @@
-package org.garen.pitaya.swagger.api.valid;
+package org.garen.pitaya.swagger.model;
 
 /**
  * 导入excel验证结果类
@@ -7,16 +7,16 @@ package org.garen.pitaya.swagger.api.valid;
  * @create 2018-04-22 17:26
  * @since v1.0
  */
-public class ImportExcelValidResponse {
+public class ImportExcelResponse {
     private Integer rowNo;      // excel行号
     private String res;     // 结果： 成功、失败
     private String message;     // 提示信息
     private Object data;        // 数据对象
 
-    public ImportExcelValidResponse() {
+    public ImportExcelResponse() {
     }
 
-    public ImportExcelValidResponse(Integer rowNo, String res, String message, Object data) {
+    public ImportExcelResponse(Integer rowNo, String res, String message, Object data) {
         this.rowNo = rowNo;
         this.res = res;
         this.message = message;

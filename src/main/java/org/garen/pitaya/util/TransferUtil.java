@@ -16,12 +16,12 @@ public class TransferUtil {
     /**
      * 类型转换（处理异常）
      *
-     * @param dest
+     * @param dist
      * @param orig
      */
-    public static void transfer(Object dest, Object orig) {
+    public static void transfer(Object dist, Object obj) {
         try {
-            PropertyUtils.copyProperties(dest, orig);
+            PropertyUtils.copyProperties(dist, obj);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {

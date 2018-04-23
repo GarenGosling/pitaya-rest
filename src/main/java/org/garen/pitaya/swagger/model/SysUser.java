@@ -1,5 +1,7 @@
 package org.garen.pitaya.swagger.model;
 
+import java.util.Date;
+
 public class SysUser {
     private Long id;
     private String code;
@@ -14,12 +16,11 @@ public class SysUser {
     private String qq;
     private String email;
     private String roles;
-    private String createTime;
 
     public SysUser() {
     }
 
-    public SysUser(Long id, String code, String nickName, String realName, String password, String phone, String idNumber, String province, String city, String wechat, String qq, String email, String roles, String createTime) {
+    public SysUser(Long id, String code, String nickName, String realName, String password, String phone, String idNumber, String province, String city, String wechat, String qq, String email, String roles) {
         this.id = id;
         this.code = code;
         this.nickName = nickName;
@@ -33,7 +34,6 @@ public class SysUser {
         this.qq = qq;
         this.email = email;
         this.roles = roles;
-        this.createTime = createTime;
     }
 
     public Long getId() {
@@ -140,31 +140,4 @@ public class SysUser {
         this.roles = roles;
     }
 
-    public String getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(String createTime) {
-        this.createTime = createTime;
-    }
-
-    @Override
-    public String toString() {
-        return "SysUser{" +
-                "id=" + id +
-                ", code='" + code + '\'' +
-                ", nickName='" + nickName + '\'' +
-                ", realName='" + realName + '\'' +
-                ", password='" + password + '\'' +
-                ", phone='" + phone + '\'' +
-                ", idNumber='" + idNumber + '\'' +
-                ", province='" + province + '\'' +
-                ", city='" + city + '\'' +
-                ", wechat='" + wechat + '\'' +
-                ", qq='" + qq + '\'' +
-                ", email='" + email + '\'' +
-                ", roles='" + roles + '\'' +
-                ", createTime=" + createTime +
-                '}';
-    }
 }

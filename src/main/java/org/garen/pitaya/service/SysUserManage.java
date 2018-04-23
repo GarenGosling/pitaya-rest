@@ -3,20 +3,22 @@ package org.garen.pitaya.service;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.RowBounds;
+import org.garen.pitaya.exception.BadRequestException;
 import org.garen.pitaya.mybatis.domain.SysUser;
 import org.garen.pitaya.mybatis.domain.SysUserQuery;
 import org.garen.pitaya.mybatis.service.SysUserService;
-import org.garen.pitaya.util.POIHandler;
+import org.garen.pitaya.swagger.model.SysUserExport;
+import org.garen.pitaya.util.*;
 import org.garen.pitaya.transfer.SysUserTransfer;
-import org.garen.pitaya.swagger.api.valid.ImportExcelValidResponse;
+import org.garen.pitaya.swagger.model.ImportExcelResponse;
 import org.garen.pitaya.swagger.api.valid.SysUserValid;
 import org.garen.pitaya.swagger.model.SysUserSearch;
-import org.garen.pitaya.util.EsapiUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
 
@@ -36,14 +38,101 @@ public class SysUserManage extends BaseManage<Long>{
     POIHandler poiHandler;
     @Autowired
     SysUserTransfer sysUserTransfer;
+
+    /**
+     * 新增
+     * @param sysUser
+     * @return
+     */
+    public boolean save(org.garen.pitaya.swagger.model.SysUser sysUser){
+        // 校验入参
+        sysUserValid.saveValid(sysUser);
+        // 对象转化
+        org.garen.pitaya.mybatis.domain.SysUser dist = new org.garen.pitaya.mybatis.domain.SysUser();
+        TransferUtil.transfer(dist, sysUser);
+        // 特殊属性赋值
+        dist.setCode("ID-" + UniqueCodeUtil.idCode());
+        if(org.apache.commons.lang.StringUtils.isBlank(dist.getNickName())){
+            dist.setNickName("N-" + UniqueCodeUtil.idCodeShort());
+        }
+        dist.setPassword(MD5Util.getMD5String("111"));
+        // 持久化
+        int i = create(dist);
+        // 返回结果
+        if(i == 1){
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 修改
+     * @param sysUser
+     * @return
+     */
+    public boolean update(org.garen.pitaya.swagger.model.SysUser sysUser){
+        // 校验入参
+        sysUserValid.updateValid(sysUser);
+        // 对象转化
+        org.garen.pitaya.mybatis.domain.SysUser dist = new org.garen.pitaya.mybatis.domain.SysUser();
+        TransferUtil.transfer(dist, sysUser);
+        // 持久化
+        int i = modify(dist);
+        // 返回结果
+        if(i == 1){
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 批量删除
+     * @param ids
+     * @return
+     */
+    public String batchRemove(String ids){
+        int count = 0;
+        String failMsg = null;
+        List<String> failList = new ArrayList<>();
+        for(String id : ids.split(",")){
+            int i = removeById(Long.parseLong(id));
+            if(i == 1){
+                count ++;
+            }else{
+                org.garen.pitaya.swagger.model.SysUser byId = findById(Long.parseLong(id));
+                failList.add(byId.getNickName());
+            }
+        }
+        if(count != ids.split(",").length){
+            failMsg = "操作失败项：";
+            for(int i=0;i<failList.size();i++){
+                failMsg += failList.get(i);
+                if(i<failList.size() - 1){
+                    failMsg += "，";
+                }
+                if(i == failList.size() - 1){
+                    failMsg += "。";
+                }
+            }
+        }
+        return failMsg;
+    }
+
     /**
      * 分页构建query
      * @param sysUserSearch
      * @return
      */
-    public SysUserQuery buildQuery(SysUserSearch sysUserSearch){
+    private SysUserQuery buildQuery(SysUserSearch sysUserSearch){
         SysUserQuery query = new SysUserQuery();
         SysUserQuery.Criteria criteria = query.createCriteria();
+        if(sysUserSearch != null){
+            if(sysUserSearch.getStart() == null){
+                sysUserSearch.setStart(0);
+            }
+            if(sysUserSearch.getLength() == null){
+                sysUserSearch.setLength(10);
+            }
             if(StringUtils.isNotBlank(sysUserSearch.getCode())){
                 criteria.andCodeEqualTo(sysUserSearch.getCode().trim());
             }
@@ -56,6 +145,7 @@ public class SysUserManage extends BaseManage<Long>{
             if(StringUtils.isNotBlank(sysUserSearch.getPhone())){
                 criteria.andPhoneEqualTo(sysUserSearch.getPhone().trim());
             }
+        }
         return query;
     }
 
@@ -65,33 +155,9 @@ public class SysUserManage extends BaseManage<Long>{
      * @return
      */
     public List<SysUser> getByPage(SysUserSearch sysUserSearch){
-        if(sysUserSearch.getStart() == null){
-            sysUserSearch.setStart(0);
-        }
-        if(sysUserSearch.getLength() == null){
-            sysUserSearch.setLength(10);
-        }
         SysUserQuery query = buildQuery(sysUserSearch);
         query.setOrderByClause("id desc");
         return getService().findBy(new RowBounds(sysUserSearch.getStart(), sysUserSearch.getLength()), query);
-    }
-
-    public List<Map<String, Object>> getByParams(String code, String nickName, String realName, String phone){
-        String sql = "select nick_name,real_name,phone,id_number,province,city,wechat,qq,email,roles from sys_user where 1=1 ";
-        if(StringUtils.isNotBlank(code)){
-            sql += " and code = '" + EsapiUtil.sql(code) + "'";
-        }
-        if(StringUtils.isNotBlank(nickName)){
-            sql += " and nick_name = '" + EsapiUtil.sql(nickName) + "'";
-        }
-        if(StringUtils.isNotBlank(realName)){
-            sql += " and real_name = '" + EsapiUtil.sql(realName) + "'";
-        }
-        if(StringUtils.isNotBlank(phone)){
-            sql += " and phone = '" + EsapiUtil.sql(phone) + "'";
-        }
-        sql += " limit 10000";
-        return getService().findBySQL(sql);
     }
 
     /**
@@ -248,33 +314,99 @@ public class SysUserManage extends BaseManage<Long>{
      * @return
      * @throws IOException
      */
-    public Map<String, List<ImportExcelValidResponse>> importExcel(MultipartFile file) throws IOException {
-        Map<String, List<ImportExcelValidResponse>> map = new HashedMap();
-        sysUserValid.validImportExcel(file);
+    public Map<String, List<ImportExcelResponse>> importExcel(MultipartFile file){
+        Map<String, List<ImportExcelResponse>> result = new HashedMap();
+        sysUserValid.importExcelValid(file);
         List<Map<Integer, String>> rows = poiHandler.readExcel(file);
-        List<ImportExcelValidResponse> successList = new ArrayList<>();
-        List<ImportExcelValidResponse> failList = new ArrayList<>();
+        List<ImportExcelResponse> successList = new ArrayList<>();
+        List<ImportExcelResponse> failList = new ArrayList<>();
+        if(rows.size() == 0){
+            throw new BadRequestException("操作失败，原因：Excel无数据");
+        }
         for(int i=0;i<rows.size();i++){
-            ImportExcelValidResponse importExcelValidResponse = sysUserValid.validImportExcelRow(i + 2, rows.get(i));
-            if("失败".equals(importExcelValidResponse.getRes())){
-                failList.add(importExcelValidResponse);
+            ImportExcelResponse importExcelResponse = sysUserValid.importExcelRowValid(i + 2, rows.get(i));
+            if("操作失败".equals(importExcelResponse.getRes())){
+                failList.add(importExcelResponse);
             } else {
-                org.garen.pitaya.mybatis.domain.SysUser sysUser = sysUserTransfer.importExcelETD(rows.get(i));
-                int save = create(sysUser);
-                if(save == 1){
-                    importExcelValidResponse.setRes("成功");
-                    importExcelValidResponse.setMessage("操作成功");
-                    successList.add(importExcelValidResponse);
+                Map<Integer, String> map = rows.get(i);
+                org.garen.pitaya.swagger.model.SysUser sysUser = new org.garen.pitaya.swagger.model.SysUser();
+                sysUser.setNickName(map.get(0));
+                sysUser.setRealName(map.get(1));
+                sysUser.setPhone(map.get(2));
+                sysUser.setIdNumber(map.get(3));
+                sysUser.setProvince(map.get(4));
+                sysUser.setCity(map.get(5));
+                sysUser.setWechat(map.get(6));
+                sysUser.setQq(map.get(7));
+                sysUser.setEmail(map.get(8));
+                sysUser.setRoles(map.get(9));
+                if(save(sysUser)){
+                    importExcelResponse.setRes("操作成功");
+                    importExcelResponse.setMessage("操作成功");
+                    successList.add(importExcelResponse);
                 } else {
-                    importExcelValidResponse.setRes("失败");
-                    importExcelValidResponse.setMessage("保存失败");
-                    failList.add(importExcelValidResponse);
+                    importExcelResponse.setRes("操作失败");
+                    importExcelResponse.setMessage("保存失败");
+                    failList.add(importExcelResponse);
                 }
             }
         }
-        map.put("successList", successList);
-        map.put("failList", failList);
-        return map;
+        result.put("successList", successList);
+        result.put("failList", failList);
+        return result;
+    }
+
+    /**
+     * 导出Excel
+     * @param sysUserSearch
+     * @param response
+     * @return
+     */
+    public void exportExcel(SysUserSearch sysUserSearch, HttpServletResponse response){
+        List<Map<String, Object>> maps = getByParams(sysUserSearch);
+        List<SysUserExport> list = new ArrayList<>();
+        for(Map<String, Object> map : maps){
+            SysUserExport sysUserExport = new SysUserExport();
+            sysUserExport.setNickName((String) map.get("nick_name"));
+            sysUserExport.setRealName((String) map.get("real_name"));
+            sysUserExport.setPhone((String) map.get("phone"));
+            sysUserExport.setIdNumber((String) map.get("id_number"));
+            sysUserExport.setProvince((String) map.get("province"));
+            sysUserExport.setCity((String) map.get("city"));
+            sysUserExport.setWechat((String) map.get("wechat"));
+            sysUserExport.setQq((String) map.get("qq"));
+            sysUserExport.setEmail((String) map.get("email"));
+            sysUserExport.setRoles((String) map.get("roles"));
+            list.add(sysUserExport);
+        }
+        String fileName = "用户信息";
+        String[] columnNames = {"用户名", "姓名（必填）", "手机号（必填）", "身份证号", "省份", "城市", "微信号", "QQ号", "邮箱", "角色"};
+        poiHandler.export(fileName, columnNames, list, response);
+    }
+
+    private List<Map<String, Object>> getByParams(SysUserSearch sysUserSearch){
+        String sql = buildSql(sysUserSearch) + " order by id desc limit " + sysUserSearch.getStart() + ",10000";
+        return getService().findBySQL(sql);
+    }
+
+    private String buildSql(SysUserSearch sysUserSearch){
+        StringBuilder sb = new StringBuilder();
+        sb.append("select nick_name,real_name,phone,id_number,province,city,wechat,qq,email,roles from sys_user where 1=1 ");
+        if(sysUserSearch != null){
+            if(StringUtils.isNotBlank(sysUserSearch.getCode())){
+                sb.append(" and code = '" + EsapiUtil.sql(sysUserSearch.getCode()) + "'");
+            }
+            if(StringUtils.isNotBlank(sysUserSearch.getNickName())){
+                sb.append(" and nick_name = '" + EsapiUtil.sql(sysUserSearch.getNickName()) + "'");
+            }
+            if(StringUtils.isNotBlank(sysUserSearch.getRealName())){
+                sb.append(" and real_name = '" + EsapiUtil.sql(sysUserSearch.getRealName()) + "'");
+            }
+            if(StringUtils.isNotBlank(sysUserSearch.getPhone())){
+                sb.append(" and phone = '" + EsapiUtil.sql(sysUserSearch.getPhone()) + "'");
+            }
+        }
+        return sb.toString();
     }
 
 }

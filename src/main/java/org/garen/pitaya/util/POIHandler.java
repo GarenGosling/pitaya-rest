@@ -28,6 +28,11 @@ import java.util.*;
 @Component
 public class POIHandler {
 
+    /**
+     * 读取Excel
+     * @param multipartFile
+     * @return
+     */
     public List<Map<Integer, String>> readExcel(MultipartFile multipartFile){
         BufferedInputStream bf=null;
         try {

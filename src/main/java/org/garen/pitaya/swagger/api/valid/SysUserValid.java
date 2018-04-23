@@ -3,7 +3,10 @@ package org.garen.pitaya.swagger.api.valid;
 import org.apache.commons.lang3.StringUtils;
 import org.garen.pitaya.enums.FileType;
 import org.garen.pitaya.exception.BadRequestException;
+import org.garen.pitaya.exception.BusinessException;
 import org.garen.pitaya.service.SysUserManage;
+import org.garen.pitaya.swagger.model.ImportExcelResponse;
+import org.garen.pitaya.swagger.model.SysUserSearch;
 import org.garen.pitaya.util.FileHandler;
 import org.garen.pitaya.swagger.model.SysUser;
 import org.garen.pitaya.util.IdNumValidUtil;
@@ -14,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.rmi.server.ExportException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,14 +27,12 @@ public class SysUserValid {
 
     @Autowired
     SysUserManage sysUserManage;
-    @Autowired
-    FileHandler fileHelper;
 
     /**
      * 验证：新增接口
      * @param sysUser
      */
-    public void validSave(SysUser sysUser){
+    public void saveValid(SysUser sysUser){
         // 参数对象
         if(sysUser == null){
             throw new BadRequestException("新增用户不能为空");
@@ -98,7 +100,7 @@ public class SysUserValid {
      * 验证：编辑接口
      * @param sysUser
      */
-    public void validModify(SysUser sysUser){
+    public void updateValid(SysUser sysUser){
         // 参数对象
         if(sysUser == null){
             throw new BadRequestException("编辑用户不能为空");
@@ -164,17 +166,24 @@ public class SysUserValid {
         }
     }
 
-    public void validImportExcel(MultipartFile multipartFile) throws IOException {
-        InputStream inputStream = inputStream = multipartFile.getInputStream();
-        if(fileHelper.getType(inputStream) != FileType.XLSX){
-            throw new BadRequestException("上传文件类型错误，只能上传一个.xlsx格式的Excel文件，且不超过2M");
+    public void importExcelValid(MultipartFile multipartFile) {
+        if(multipartFile == null){
+            throw new BadRequestException("excel不能为空");
+        }
+        try{
+            InputStream inputStream = inputStream = multipartFile.getInputStream();
+            if(FileHandler.getType(inputStream) != FileType.XLSX) {
+                throw new BadRequestException("上传文件类型错误");
+            }
+        }catch(IOException e){
+            throw new BusinessException("系统异常，位置：导入文件类型验证。");
         }
         if (multipartFile.getSize() > 2 * 1024 * 1024) {
             throw new BadRequestException("导入文件大小不能超过 2MB");
         }
     }
 
-    public ImportExcelValidResponse validImportExcelRow(Integer rowNo, Map<Integer, String> map){
+    public ImportExcelResponse importExcelRowValid(Integer rowNo, Map<Integer, String> map){
         List<String> failMsgList = new ArrayList<>();
         // 非空验证：姓名
         if(StringUtils.isBlank(map.get(1))){
@@ -233,12 +242,12 @@ public class SysUserValid {
                 failMsgList.add("邮箱号已存在");
             }
         }
-        ImportExcelValidResponse importExcelValidResponse = new ImportExcelValidResponse();
+        ImportExcelResponse importExcelValidResponse = new ImportExcelResponse();
         importExcelValidResponse.setRowNo(rowNo);
         importExcelValidResponse.setData(map);
-        importExcelValidResponse.setRes("成功");
+        importExcelValidResponse.setRes("操作成功");
         if(failMsgList.size() != 0){
-            importExcelValidResponse.setRes("失败");
+            importExcelValidResponse.setRes("操作失败");
             StringBuilder sb = new StringBuilder();
             for(int i=0;i<failMsgList.size();i++) {
                 sb.append(failMsgList.get(i));
@@ -253,4 +262,5 @@ public class SysUserValid {
         }
         return importExcelValidResponse;
     }
+
 }
