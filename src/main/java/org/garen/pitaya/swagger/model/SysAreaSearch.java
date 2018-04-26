@@ -10,20 +10,20 @@ package org.garen.pitaya.swagger.model;
 public class SysAreaSearch {
     private Integer start;
     private Integer length;
+    private Long id;
     private Integer parentId;
     private String name;
-    private Integer isParent;
     private String type;
 
     public SysAreaSearch() {
     }
 
-    public SysAreaSearch(Integer start, Integer length, Integer parentId, String name, Integer isParent, String type) {
+    public SysAreaSearch(Integer start, Integer length, Long id, Integer parentId, String name, String type) {
         this.start = start;
         this.length = length;
+        this.id = id;
         this.parentId = parentId;
         this.name = name;
-        this.isParent = isParent;
         this.type = type;
     }
 
@@ -43,6 +43,14 @@ public class SysAreaSearch {
         this.length = length;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public Integer getParentId() {
         return parentId;
     }
@@ -57,14 +65,6 @@ public class SysAreaSearch {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Integer getIsParent() {
-        return isParent;
-    }
-
-    public void setIsParent(Integer isParent) {
-        this.isParent = isParent;
     }
 
     public String getType() {

@@ -4,7 +4,6 @@ public class SysAreaVo {
     private Long id;
     private Integer parentId;
     private String name;
-    private Integer isParent;
     private String fullname;
     private String fullpath;
     private String type;
@@ -12,11 +11,10 @@ public class SysAreaVo {
     public SysAreaVo() {
     }
 
-    public SysAreaVo(Long id, Integer parentId, String name, Integer isParent, String fullname, String fullpath, String type) {
+    public SysAreaVo(Long id, Integer parentId, String name, String fullname, String fullpath, String type) {
         this.id = id;
         this.parentId = parentId;
         this.name = name;
-        this.isParent = isParent;
         this.fullname = fullname;
         this.fullpath = fullpath;
         this.type = type;
@@ -44,14 +42,6 @@ public class SysAreaVo {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Integer getIsParent() {
-        return isParent;
-    }
-
-    public void setIsParent(Integer isParent) {
-        this.isParent = isParent;
     }
 
     public String getFullname() {

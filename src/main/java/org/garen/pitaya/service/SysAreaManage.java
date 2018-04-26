@@ -114,15 +114,16 @@ public class SysAreaManage extends BaseManage<Long>{
             if(sysAreaSearch.getLength() == null){
                 sysAreaSearch.setLength(5);
             }
+            if(sysAreaSearch.getId() != null){
+                criteria.andIdEqualTo(sysAreaSearch.getId());
+            }
             if(sysAreaSearch.getParentId() != null){
                 criteria.andParentIdEqualTo(sysAreaSearch.getParentId());
             }
             if(StringUtils.isNotBlank(sysAreaSearch.getName())){
-                criteria.andNameEqualTo(sysAreaSearch.getName().trim());
+                criteria.andNameLike("%"+sysAreaSearch.getName()+"%");
             }
-            if(sysAreaSearch.getIsParent() != null){
-                criteria.andIsParentEqualTo(sysAreaSearch.getIsParent());
-            }
+
             if(StringUtils.isNotBlank(sysAreaSearch.getType())){
                 criteria.andTypeEqualTo(sysAreaSearch.getType());
             }
@@ -159,7 +160,7 @@ public class SysAreaManage extends BaseManage<Long>{
         if(parentId == null){
             return null;
         }
-        return getSingleByParamsOr(parentId, null, null, null);
+        return getSingleByParamsOr(parentId, null, null);
     }
 
     /**
@@ -171,19 +172,7 @@ public class SysAreaManage extends BaseManage<Long>{
         if(StringUtils.isBlank(name)){
             return null;
         }
-        return getSingleByParamsOr(null, name, null, null);
-    }
-
-    /**
-     * 是否为父菜单查询
-     * @param isParent
-     * @return
-     */
-    public SysArea getByIsParent(Integer isParent){
-        if(isParent != null){
-            return null;
-        }
-        return getSingleByParamsOr(null,null, isParent, null);
+        return getSingleByParamsOr(null, name, null);
     }
 
     /**
@@ -195,17 +184,16 @@ public class SysAreaManage extends BaseManage<Long>{
         if(StringUtils.isBlank(type)){
             return null;
         }
-        return getSingleByParamsOr(null,null, null, type);
+        return getSingleByParamsOr(null,null, type);
     }
     /**
      * 通过属性查询单个用户，组合查询方式“或”
      * @param parentId
      * @param name
-     * @param isParent
      * @return
      */
-    public SysArea getSingleByParamsOr(Integer parentId, String name, Integer isParent, String type){
-        List<SysArea> listByParamsOr = getListByParamsOr(parentId, name, isParent, type);
+    public SysArea getSingleByParamsOr(Integer parentId, String name, String type){
+        List<SysArea> listByParamsOr = getListByParamsOr(parentId, name, type);
         if(!CollectionUtils.isEmpty(listByParamsOr) && listByParamsOr.size() > 0){
             return listByParamsOr.get(0);
         }
@@ -216,10 +204,9 @@ public class SysAreaManage extends BaseManage<Long>{
      * 通过属性查询多个用户，组合查询方式“或”
      * @param parentId
      * @param name
-     * @param isParent
      * @return
      */
-    public List<SysArea> getListByParamsOr(Integer parentId, String name, Integer isParent, String type){
+    public List<SysArea> getListByParamsOr(Integer parentId, String name, String type){
         SysAreaQuery query = new SysAreaQuery();
         SysAreaQuery.Criteria criteria = query.or();
         if(parentId != null){
@@ -227,9 +214,6 @@ public class SysAreaManage extends BaseManage<Long>{
         }
         if(StringUtils.isNotBlank(name)){
             criteria.andNameLike("%"+name.trim()+"%");
-        }
-        if(isParent != null){
-            criteria.andIsParentEqualTo(isParent);
         }
         if(StringUtils.isNotBlank(type)){
             criteria.andTypeEqualTo(type);
@@ -270,14 +254,14 @@ public class SysAreaManage extends BaseManage<Long>{
         StringBuilder sb = new StringBuilder();
         sb.append("select type,fullname,name from sys_area where 1=1 ");
         if(sysAreaSearch != null){
+            if(sysAreaSearch.getId() != null){
+                sb.append(" and id = '" + sysAreaSearch.getId() + "'");
+            }
             if(sysAreaSearch.getParentId() != null){
                 sb.append(" and parent_id = '" + sysAreaSearch.getParentId() + "'");
             }
             if(StringUtils.isNotBlank(sysAreaSearch.getName())){
                 sb.append(" and name = '" + EsapiUtil.sql(sysAreaSearch.getName()) + "'");
-            }
-            if(sysAreaSearch.getIsParent() != null){
-                sb.append(" and is_parent = '" + sysAreaSearch.getIsParent() + "'");
             }
             if(StringUtils.isNotBlank(sysAreaSearch.getType())){
                 sb.append(" and type = '" + sysAreaSearch.getType() + "'");

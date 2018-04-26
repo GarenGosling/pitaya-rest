@@ -6,6 +6,7 @@ import org.garen.pitaya.exception.BadRequestException;
 import org.garen.pitaya.exception.BusinessException;
 import org.garen.pitaya.service.SysAreaManage;
 import org.garen.pitaya.swagger.model.ImportExcelResult;
+import org.garen.pitaya.swagger.model.SysAreaSearch;
 import org.garen.pitaya.swagger.model.SysAreaVo;
 import org.garen.pitaya.util.FileHandler;
 import org.garen.pitaya.util.IdNumValidUtil;
@@ -21,38 +22,39 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class SysAreaValid {
+public class SysAreaValid extends BaseValid {
     @Autowired
     SysAreaManage sysAreaManage;
 
     /**
      * 验证：新增接口
-     * @param sysArea
+     * @param sysAreaVo
      */
-    public void saveValid(SysAreaVo sysArea){
-        if(sysArea == null){
+    public void saveValid(SysAreaVo sysAreaVo){
+        if(sysAreaVo == null){
             throw new BadRequestException("新增地区不能为空");
         }
-        if(StringUtils.isBlank(sysArea.getName())){
+        if(StringUtils.isBlank(sysAreaVo.getName())){
             throw new BadRequestException("名称不能为空");
         }
-        if(StringUtils.isBlank(sysArea.getType())){
+
+        if(StringUtils.isBlank(sysAreaVo.getType())){
             throw new BadRequestException("类型不能为空");
         }
-        if(!"省份".equals(sysArea.getType()) && sysArea.getParentId() == null){
+        if(!"省份".equals(sysAreaVo.getType()) && sysAreaVo.getParentId() == null){
             throw new BadRequestException("上级不能为空");
         }
     }
 
     /**
      * 验证：编辑接口
-     * @param sysArea
+     * @param sysAreaVo
      */
-    public void updateValid(SysAreaVo sysArea){
-        if(sysArea == null){
+    public void updateValid(SysAreaVo sysAreaVo){
+        if(sysAreaVo == null){
             throw new BadRequestException("新增地区不能为空");
         }
-        if(sysArea.getId() == null){
+        if(sysAreaVo.getId() == null){
             throw new BadRequestException("ID不能为空");
         }
     }
