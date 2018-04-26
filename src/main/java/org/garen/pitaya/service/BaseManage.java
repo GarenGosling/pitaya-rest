@@ -20,7 +20,7 @@ import java.util.Map;
  * @create 2017-09-15 00:00
  * @since v1.0
  */
-public abstract class BaseManage<PK extends Serializable> {
+public abstract class BaseManage<PK extends Serializable> extends CommonMethods{
 
     protected Logger LOGGER = LoggerFactory.getLogger(getClass());
     protected static final Integer START = 0;

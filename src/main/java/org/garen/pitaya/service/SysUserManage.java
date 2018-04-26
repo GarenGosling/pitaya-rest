@@ -90,30 +90,17 @@ public class SysUserManage extends BaseManage<Long>{
      */
     public String batchRemove(String ids){
         int count = 0;
-        String failMsg = null;
         List<String> failList = new ArrayList<>();
         for(String id : ids.split(",")){
             int i = removeById(Long.parseLong(id));
             if(i == 1){
                 count ++;
             }else{
-                SysUserVo byId = findById(Long.parseLong(id));
+                SysUser byId = findById(Long.parseLong(id));
                 failList.add(byId.getNickName());
             }
         }
-        if(count != ids.split(",").length){
-            failMsg = "操作失败项：";
-            for(int i=0;i<failList.size();i++){
-                failMsg += failList.get(i);
-                if(i<failList.size() - 1){
-                    failMsg += "，";
-                }
-                if(i == failList.size() - 1){
-                    failMsg += "。";
-                }
-            }
-        }
-        return failMsg;
+        return failMsg(count, ids, failList);
     }
 
     /**
@@ -327,17 +314,17 @@ public class SysUserManage extends BaseManage<Long>{
                 failList.add(importExcelResponse);
             } else {
                 Map<Integer, String> map = rows.get(i);
-                SysUserVo sysUser = new SysUserVo();
-                sysUser.setNickName(map.get(0));
-                sysUser.setRealName(map.get(1));
-                sysUser.setPhone(map.get(2));
-                sysUser.setIdNumber(map.get(3));
-                sysUser.setProvince(map.get(4));
-                sysUser.setCity(map.get(5));
-                sysUser.setWechat(map.get(6));
-                sysUser.setQq(map.get(7));
-                sysUser.setEmail(map.get(8));
-                if(save(sysUser)){
+                SysUserVo sysUserVo = new SysUserVo();
+                sysUserVo.setNickName(map.get(0));
+                sysUserVo.setRealName(map.get(1));
+                sysUserVo.setPhone(map.get(2));
+                sysUserVo.setIdNumber(map.get(3));
+                sysUserVo.setProvince(map.get(4));
+                sysUserVo.setCity(map.get(5));
+                sysUserVo.setWechat(map.get(6));
+                sysUserVo.setQq(map.get(7));
+                sysUserVo.setEmail(map.get(8));
+                if(save(sysUserVo)){
                     importExcelResponse.setRes("操作成功");
                     importExcelResponse.setMessage("操作成功");
                     successList.add(importExcelResponse);
@@ -382,6 +369,9 @@ public class SysUserManage extends BaseManage<Long>{
     }
 
     private List<Map<String, Object>> getByParams(SysUserSearch sysUserSearch){
+        if(sysUserSearch.getStart() == null){
+            sysUserSearch.setStart(0);
+        }
         String sql = buildSql(sysUserSearch) + " order by id desc limit " + sysUserSearch.getStart() + ",10000";
         return getService().findBySQL(sql);
     }
