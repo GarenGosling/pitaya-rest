@@ -129,7 +129,7 @@ public class SysUserManage extends BaseManage<Long>{
                 sysUserSearch.setStart(0);
             }
             if(sysUserSearch.getLength() == null){
-                sysUserSearch.setLength(10);
+                sysUserSearch.setLength(5);
             }
             if(StringUtils.isNotBlank(sysUserSearch.getCode())){
                 criteria.andCodeEqualTo(sysUserSearch.getCode().trim());
@@ -337,7 +337,6 @@ public class SysUserManage extends BaseManage<Long>{
                 sysUser.setWechat(map.get(6));
                 sysUser.setQq(map.get(7));
                 sysUser.setEmail(map.get(8));
-                sysUser.setRoles(map.get(9));
                 if(save(sysUser)){
                     importExcelResponse.setRes("操作成功");
                     importExcelResponse.setMessage("操作成功");
