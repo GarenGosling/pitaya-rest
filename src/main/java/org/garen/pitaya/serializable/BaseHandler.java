@@ -14,7 +14,7 @@ import java.io.*;
  * @since 1.0
  */
 @Component
-public class SerializableHandler
+public class BaseHandler
 {
     /**
      * 持久化为XML对象

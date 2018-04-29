@@ -1,50 +1,44 @@
 package org.garen.pitaya.serializable;
 
-import org.garen.pitaya.exception.BusinessException;
+import org.garen.pitaya.exception.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ResourceUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URISyntaxException;
 
 @Service
 public class SerializedObjHandler<T extends SerializedObj>{
 
     @Autowired
-    SerializableHandler javaSerializable;
+    BaseHandler baseHandler;
 
-    public void store(T t) throws Exception{
-        String botPath = ResourceUtils.toURI(ClassLoader.getSystemResource("data/BOT.X")).getSchemeSpecificPart();
-        String realPath = botPath.replace("BOT.X", t.getName()+".obj");
-        File objFile = new File(realPath);
+    public void store(T t, String path) throws IOException {
+        File objFile = new File(path + t.getName() + ".obj");
         if(!objFile.exists()){
-            objFile.createNewFile();
+           objFile.createNewFile();
         }
-        SerializableHandler serializableHandler = new SerializableHandler();
-        serializableHandler.store(t, new FileOutputStream(objFile));
+        FileOutputStream fileOutputStream = null;
+        fileOutputStream = new FileOutputStream(objFile);
+        baseHandler.store(t, fileOutputStream);
     }
 
-    public T load(String name) throws IOException, ClassNotFoundException, URISyntaxException {
-        String botPath = ResourceUtils.toURI(ClassLoader.getSystemResource("data/BOT.X")).getSchemeSpecificPart();
-        String realPath = botPath.replace("BOT.X", name+".obj");
-        File objFile = new File(realPath);
-        if(!objFile.exists()){
+    public T load(String name, String path) {
+        File objFile = new File(path + name + ".obj");
+        try {
+            return (T) baseHandler.load(new FileInputStream(objFile));
+        } catch (IOException e) {
+            return null;
+        } catch (ClassNotFoundException e) {
             return null;
         }
-        SerializableHandler serializableHandler = new SerializableHandler();
-        return (T) serializableHandler.load(new FileInputStream(objFile));
     }
 
-    public void destroy(String name) throws URISyntaxException {
-        String botPath = ResourceUtils.toURI(ClassLoader.getSystemResource("data/BOT.X")).getSchemeSpecificPart();
-        String realPath = botPath.replace("BOT.X", name+".obj");
-        File objFile = new File(realPath);
+    public void destroy(String name, String path) throws URISyntaxException {
+        File objFile = new File(path + name + ".obj");
         if(!objFile.exists()){
-            throw new BusinessException("名称有误");
+            throw new BadRequestException("名称有误");
         }
         objFile.delete();
     }

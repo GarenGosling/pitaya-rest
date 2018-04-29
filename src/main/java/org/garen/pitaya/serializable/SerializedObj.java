@@ -14,6 +14,5 @@ import java.io.Serializable;
 @Data
 public class SerializedObj implements Serializable {
     private String name;
-    private String description;
 
 }

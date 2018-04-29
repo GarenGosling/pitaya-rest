@@ -22,3 +22,5 @@ server:
     max-threads: 1024
     uri-encoding: utf-8
 #    basedir: /home/tomcat-cas
+
+incrementPath: aaa
