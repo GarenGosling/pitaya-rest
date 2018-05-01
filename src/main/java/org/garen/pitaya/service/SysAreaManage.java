@@ -100,67 +100,15 @@ public class SysAreaManage extends BaseManage<Long>{
     }
 
     /**
-     * 分页构建query
-     * @param sysAreaSearch
+     * 编码查询
+     * @param code
      * @return
      */
-    private SysAreaQuery buildQuery(SysAreaSearch sysAreaSearch){
-        SysAreaQuery query = new SysAreaQuery();
-        SysAreaQuery.Criteria criteria = query.createCriteria();
-        if(sysAreaSearch != null){
-            if(sysAreaSearch.getStart() == null){
-                sysAreaSearch.setStart(0);
-            }
-            if(sysAreaSearch.getLength() == null){
-                sysAreaSearch.setLength(5);
-            }
-            if(sysAreaSearch.getId() != null){
-                criteria.andIdEqualTo(sysAreaSearch.getId());
-            }
-            if(sysAreaSearch.getParentId() != null){
-                criteria.andParentIdEqualTo(sysAreaSearch.getParentId());
-            }
-            if(StringUtils.isNotBlank(sysAreaSearch.getName())){
-                criteria.andNameLike("%"+sysAreaSearch.getName()+"%");
-            }
-
-            if(StringUtils.isNotBlank(sysAreaSearch.getType())){
-                criteria.andTypeEqualTo(sysAreaSearch.getType());
-            }
-        }
-        return query;
-    }
-
-    /**
-     * 分页列表
-     * @param sysAreaSearch
-     * @return
-     */
-    public List<SysArea> getByPage(SysAreaSearch sysAreaSearch){
-        SysAreaQuery query = buildQuery(sysAreaSearch);
-        query.setOrderByClause("fullname asc");
-        return getService().findBy(new RowBounds(sysAreaSearch.getStart(), sysAreaSearch.getLength()), query);
-    }
-
-    /**
-     * 分页总数量
-     * @param sysAreaSearch
-     * @return
-     */
-    public int getPageCount(SysAreaSearch sysAreaSearch) {
-        return getService().countByExample(buildQuery(sysAreaSearch));
-    }
-
-    /**
-     * 父ID查询
-     * @param parentId
-     * @return
-     */
-    public SysArea getByParentId(Integer parentId){
-        if(parentId == null){
+    public SysArea getByCode(String code){
+        if(StringUtils.isBlank(code)){
             return null;
         }
-        return getSingleByParamsOr(parentId, null, null);
+        return getSingleByParamsOr(code, null, null, null);
     }
 
     /**
@@ -168,32 +116,48 @@ public class SysAreaManage extends BaseManage<Long>{
      * @param name
      * @return
      */
-    public SysArea getByNameLike(String name){
+    public List<SysArea> getByNameLike(String name){
         if(StringUtils.isBlank(name)){
             return null;
         }
-        return getSingleByParamsOr(null, name, null);
+        return getListByParamsOr(null, name, null,null);
     }
+
+    /**
+     * 父编码查询
+     * @param parentCode
+     * @return
+     */
+    public List<SysArea> getByParentCode(String parentCode){
+        if(StringUtils.isBlank(parentCode)){
+            return null;
+        }
+        return getListByParamsOr(null, null, parentCode, null);
+    }
+
 
     /**
      * 类型查询
      * @param type
      * @return
      */
-    public SysArea getByType(String type){
+    public List<SysArea> getByType(String type){
         if(StringUtils.isBlank(type)){
             return null;
         }
-        return getSingleByParamsOr(null,null, type);
+        return getListByParamsOr(null, null,null, type);
     }
+
     /**
      * 通过属性查询单个用户，组合查询方式“或”
-     * @param parentId
+     * @param code
      * @param name
+     * @param parentCode
+     * @param type
      * @return
      */
-    public SysArea getSingleByParamsOr(Integer parentId, String name, String type){
-        List<SysArea> listByParamsOr = getListByParamsOr(parentId, name, type);
+    public SysArea getSingleByParamsOr(String code, String name, String parentCode, String type){
+        List<SysArea> listByParamsOr = getListByParamsOr(code, name, parentCode, type);
         if(!CollectionUtils.isEmpty(listByParamsOr) && listByParamsOr.size() > 0){
             return listByParamsOr.get(0);
         }
@@ -202,18 +166,23 @@ public class SysAreaManage extends BaseManage<Long>{
 
     /**
      * 通过属性查询多个用户，组合查询方式“或”
-     * @param parentId
+     * @param code
      * @param name
+     * @param parentCode
+     * @param type
      * @return
      */
-    public List<SysArea> getListByParamsOr(Integer parentId, String name, String type){
+    public List<SysArea> getListByParamsOr(String code, String name, String parentCode, String type){
         SysAreaQuery query = new SysAreaQuery();
         SysAreaQuery.Criteria criteria = query.or();
-        if(parentId != null){
-            criteria.andParentIdEqualTo(parentId);
+        if(StringUtils.isNotBlank(code)){
+            criteria.andCodeEqualTo(code);
         }
         if(StringUtils.isNotBlank(name)){
             criteria.andNameLike("%"+name.trim()+"%");
+        }
+        if(StringUtils.isNotBlank(parentCode)){
+            criteria.andParentCodeEqualTo(parentCode);
         }
         if(StringUtils.isNotBlank(type)){
             criteria.andTypeEqualTo(type);
@@ -232,13 +201,17 @@ public class SysAreaManage extends BaseManage<Long>{
         List<SysAreaExport> list = new ArrayList<>();
         for(Map<String, Object> map : maps){
             SysAreaExport sysAreaExport = new SysAreaExport();
+            sysAreaExport.setCode((String) map.get("code"));
             sysAreaExport.setName((String) map.get("name"));
-            sysAreaExport.setFullname((String) map.get("fullname"));
+            sysAreaExport.setParentCode((String) map.get("parent_code"));
+            sysAreaExport.setParentName((String) map.get("parent_name"));
+            sysAreaExport.setFullName((String) map.get("full_name"));
+            sysAreaExport.setFullPath((String) map.get("full_path"));
             sysAreaExport.setType((String) map.get("type"));
             list.add(sysAreaExport);
         }
-        String fileName = "用户信息";
-        String[] columnNames = {"类型（可选值：省份、城市、区县）", "名称", "上级名称（可选值：中国、河北省等）"};
+        String fileName = "地区信息";
+        String[] columnNames = {"编码", "名称", "上级编码", "上级名称", "全名称", "全路径", "类型"};
         poiHandler.export(fileName, columnNames, list, response);
     }
 
@@ -246,22 +219,22 @@ public class SysAreaManage extends BaseManage<Long>{
         if(sysAreaSearch.getStart() == null){
             sysAreaSearch.setStart(0);
         }
-        String sql = buildSql(sysAreaSearch) + " order by fullname asc limit " + sysAreaSearch.getStart() + ",10000";
+        String sql = buildSql(sysAreaSearch) + " order by full_name asc limit " + sysAreaSearch.getStart() + ",10000";
         return getService().findBySQL(sql);
     }
 
     private String buildSql(SysAreaSearch sysAreaSearch){
         StringBuilder sb = new StringBuilder();
-        sb.append("select type,fullname,name from sys_area where 1=1 ");
+        sb.append("select code, name, parent_code, parent_name, full_name, full_path, type from sys_area where 1=1 ");
         if(sysAreaSearch != null){
-            if(sysAreaSearch.getId() != null){
-                sb.append(" and id = '" + sysAreaSearch.getId() + "'");
+            if(StringUtils.isBlank(sysAreaSearch.getCode())){
+                sb.append(" and code = '" + sysAreaSearch.getCode() + "'");
             }
-            if(sysAreaSearch.getParentId() != null){
-                sb.append(" and parent_id = '" + sysAreaSearch.getParentId() + "'");
+            if(StringUtils.isBlank(sysAreaSearch.getName())){
+                sb.append(" and parent_id = '" + sysAreaSearch.getName() + "'");
             }
-            if(StringUtils.isNotBlank(sysAreaSearch.getName())){
-                sb.append(" and name = '" + EsapiUtil.sql(sysAreaSearch.getName()) + "'");
+            if(StringUtils.isNotBlank(sysAreaSearch.getParentCode())){
+                sb.append(" and name = '" + EsapiUtil.sql(sysAreaSearch.getParentCode()) + "'");
             }
             if(StringUtils.isNotBlank(sysAreaSearch.getType())){
                 sb.append(" and type = '" + sysAreaSearch.getType() + "'");
@@ -269,5 +242,6 @@ public class SysAreaManage extends BaseManage<Long>{
         }
         return sb.toString();
     }
+
 
 }

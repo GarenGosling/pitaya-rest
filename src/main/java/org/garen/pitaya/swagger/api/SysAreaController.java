@@ -3,6 +3,7 @@ package org.garen.pitaya.swagger.api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang.StringUtils;
+import org.garen.pitaya.mybatis.domain.SysArea;
 import org.garen.pitaya.service.SysAreaManage;
 import org.garen.pitaya.swagger.model.BaseModel;
 import org.garen.pitaya.swagger.model.ResponseModel;
@@ -30,14 +31,6 @@ public class SysAreaController extends BaseModel {
     SysAreaValid sysAreaValid;
     @Autowired
     POIHandler poiHandler;
-
-    @ApiOperation(value = "分页查询", notes = "分页查询")
-    @RequestMapping(value = "/page", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    ResponseEntity<ResponseModel> getByPage(SysAreaSearch sysAreaSearch){
-        List<org.garen.pitaya.mybatis.domain.SysArea> list = sysAreaManage.getByPage(sysAreaSearch);
-        int totalCount = sysAreaManage.getPageCount(sysAreaSearch);
-        return new ResponseEntity<ResponseModel>(successModel("查询",page(list, totalCount)), HttpStatus.OK);
-    }
 
     @ApiOperation(value = "新增", notes = "新增 ")
     @RequestMapping(value = "/save", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -84,6 +77,13 @@ public class SysAreaController extends BaseModel {
     @RequestMapping(value = "/exportExcel",method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     void exportExcel(SysAreaSearch sysAreaSearch, HttpServletResponse response){
         sysAreaManage.exportExcel(sysAreaSearch, response);
+    }
+
+    @ApiOperation(value = "上级编码查询", notes = "上级编码查询")
+    @RequestMapping(value = "/getByParentCode", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    ResponseEntity<ResponseModel> getByParentCode(@ApiParam(value = "上级编码查询") @Valid @RequestParam(value = "parentCode", required = true) String parentCode){
+        List<SysArea> sysAreas = sysAreaManage.getByParentCode(parentCode);
+        return new ResponseEntity<ResponseModel>(successModel("上级编码查询", sysAreas), HttpStatus.OK);
     }
 
 }

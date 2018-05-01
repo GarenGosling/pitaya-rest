@@ -31,19 +31,7 @@ public class SysAreaValid extends BaseValid {
      * @param sysAreaVo
      */
     public void saveValid(SysAreaVo sysAreaVo){
-        if(sysAreaVo == null){
-            throw new BadRequestException("新增地区不能为空");
-        }
-        if(StringUtils.isBlank(sysAreaVo.getName())){
-            throw new BadRequestException("名称不能为空");
-        }
 
-        if(StringUtils.isBlank(sysAreaVo.getType())){
-            throw new BadRequestException("类型不能为空");
-        }
-        if(!"省份".equals(sysAreaVo.getType()) && sysAreaVo.getParentId() == null){
-            throw new BadRequestException("上级不能为空");
-        }
     }
 
     /**
@@ -51,11 +39,6 @@ public class SysAreaValid extends BaseValid {
      * @param sysAreaVo
      */
     public void updateValid(SysAreaVo sysAreaVo){
-        if(sysAreaVo == null){
-            throw new BadRequestException("新增地区不能为空");
-        }
-        if(sysAreaVo.getId() == null){
-            throw new BadRequestException("ID不能为空");
-        }
+
     }
 }
