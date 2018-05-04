@@ -2,6 +2,7 @@ package org.garen.pitaya.swagger.api;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang.StringUtils;
 import org.garen.pitaya.mybatis.domain.SysArea;
 import org.garen.pitaya.service.SysAreaManage;
@@ -20,7 +21,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/api/sysArea")
@@ -86,4 +89,10 @@ public class SysAreaController extends BaseModel {
         return new ResponseEntity<ResponseModel>(successModel("上级编码查询", sysAreas), HttpStatus.OK);
     }
 
+    @ApiOperation(value = "编码查询", notes = "编码查询")
+    @RequestMapping(value = "/getByCode", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    ResponseEntity<ResponseModel> getByCode(@ApiParam(value = "编码查询") @Valid @RequestParam(value = "code", required = true) String code){
+        SysArea sysArea = sysAreaManage.getByCode(code);
+        return new ResponseEntity<ResponseModel>(successModel("上级编码查询", sysArea), HttpStatus.OK);
+    }
 }
