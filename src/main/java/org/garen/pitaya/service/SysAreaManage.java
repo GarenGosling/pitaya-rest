@@ -8,6 +8,7 @@ import org.garen.pitaya.mybatis.domain.SysArea;
 import org.garen.pitaya.mybatis.domain.SysAreaDTO;
 import org.garen.pitaya.mybatis.domain.SysAreaQuery;
 import org.garen.pitaya.mybatis.service.SysAreaService;
+import org.garen.pitaya.redis.RedisService;
 import org.garen.pitaya.swagger.model.ImportExcelResult;
 import org.garen.pitaya.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,8 @@ import java.util.Map;
 public class SysAreaManage extends BaseManage<Long>{
     @Autowired
     SysAreaService<SysArea, SysAreaQuery, Long> service;
+    @Autowired
+    RedisService redisService;
 
     @Override
     public SysAreaService<SysArea, SysAreaQuery, Long> getService() {
@@ -152,12 +155,20 @@ public class SysAreaManage extends BaseManage<Long>{
     }
 
     public SysAreaDTO getAll(){
+        Object redisObj = redisService.get("sysAreaDTOJson");
+        if(redisObj != null){
+            String json = (String) redisObj;
+            SysAreaDTO sysAreaDTO = new JsonMapper().fromJson(json, SysAreaDTO.class);
+            return sysAreaDTO;
+        }
         SysAreaDTO sysAreaDTO = new SysAreaDTO();
         SysArea sysArea = findById(0L);
         TransferUtil.transfer(sysAreaDTO, sysArea);
         List<SysAreaDTO> children = getByParentId(0L);
         sysAreaDTO.setChildren(children);
         setChildren(children);
+        String sysAreaDTOJson = new JsonMapper().toJson(sysAreaDTO);
+        redisService.set("sysAreaDTOJson", sysAreaDTOJson);
         return sysAreaDTO;
     }
 
