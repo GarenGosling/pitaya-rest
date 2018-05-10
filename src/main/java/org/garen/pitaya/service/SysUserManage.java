@@ -134,6 +134,25 @@ public class SysUserManage extends BaseManage<Long>{
         return query;
     }
 
+    private String buildSqlSearch(SysUserSearch sysUserSearch){
+        String sql = "select su.id, su.code, su.nick_name as nickName, su.real_name as realName, su.password, su.phone, su.id_number as idNumber, su.province, sa.label as provinceLabel,su.city, sa1.label as cityLabel, su.wechat, su.qq, su.email, su.roles, su.create_time as createTime from sys_user su left join sys_area sa on su.province = sa.id left join sys_area sa1 on su.city = sa1.id where 1=1 ";
+        if(sysUserSearch != null){
+            if(StringUtils.isNotBlank(sysUserSearch.getCode())){
+                sql += " and su.code = " + EsapiUtil.sql(sysUserSearch.getCode().trim());
+            }
+            if(StringUtils.isNotBlank(sysUserSearch.getNickName())){
+                sql += " and su.nick_name = " + EsapiUtil.sql(sysUserSearch.getNickName().trim());
+            }
+            if(StringUtils.isNotBlank(sysUserSearch.getRealName())){
+                sql += " and su.real_name like '%"+ EsapiUtil.sql(sysUserSearch.getRealName().trim()) +"%'";
+            }
+            if(StringUtils.isNotBlank(sysUserSearch.getPhone())){
+                sql += " and su.phone = " + EsapiUtil.sql(sysUserSearch.getPhone());
+            }
+        }
+        return sql;
+    }
+
     /**
      * 分页列表
      * @param sysUserSearch
@@ -366,6 +385,17 @@ public class SysUserManage extends BaseManage<Long>{
         String fileName = "用户信息";
         String[] columnNames = {"用户名", "姓名（必填）", "手机号（必填）", "身份证号", "省份", "城市", "微信号", "QQ号", "邮箱", "角色"};
         poiHandler.export(fileName, columnNames, list, response);
+    }
+
+    public List<Map<String, Object>> getByParamsSearch(SysUserSearch sysUserSearch){
+        if(sysUserSearch.getStart() == null){
+            sysUserSearch.setStart(0);
+        }
+        if(sysUserSearch.getLength() == null){
+            sysUserSearch.setLength(5);
+        }
+        String sql = buildSqlSearch(sysUserSearch) + " order by id desc limit " + sysUserSearch.getStart() + "," + sysUserSearch.getLength();
+        return getService().findBySQL(sql);
     }
 
     private List<Map<String, Object>> getByParams(SysUserSearch sysUserSearch){

@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/api/sysUser")
@@ -31,7 +32,7 @@ public class SysUserController extends BaseModel {
     @ApiOperation(value = "分页查询", notes = "分页查询")
     @RequestMapping(value = "/page", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     ResponseEntity<ResponseModel> getByPage(SysUserSearch sysUserSearch){
-        List<org.garen.pitaya.mybatis.domain.SysUser> list = sysUserManage.getByPage(sysUserSearch);
+        List<Map<String, Object>> list = sysUserManage.getByParamsSearch(sysUserSearch);
         int totalCount = sysUserManage.getPageCount(sysUserSearch);
         return new ResponseEntity<ResponseModel>(successModel("查询",page(list, totalCount)), HttpStatus.OK);
     }

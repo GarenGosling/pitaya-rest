@@ -9,6 +9,8 @@ public class SysAreaDTO {
     private Long id;
     private String label;
     private Long parentId;
-    private Boolean isLeaf;
+    private String fullPath;
+    private String fullName;
+    private Integer level;
     private List<SysAreaDTO> children;
 }
