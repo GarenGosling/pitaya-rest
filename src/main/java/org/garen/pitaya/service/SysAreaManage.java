@@ -46,6 +46,8 @@ public class SysAreaManage extends BaseManage<Long>{
             child.setFullName(fullName);
             child.setLevel(level);
             getService().updateByKey(child);
+            // 更新缓存
+            updateChildRedis(child);
             return true;
         }else{
             return false;
@@ -91,11 +93,16 @@ public class SysAreaManage extends BaseManage<Long>{
         for(SysArea sysArea : sysAreaList){
             count = count + update(sysArea);
         }
+        // 更新缓存
+        updateRedisAll();
         return count;
     }
 
     public int delete(Long id){
         SysArea sysArea = findById(id);
+        if(sysArea == null){
+            throw new BadRequestException("删除失败，原因：id不存在");
+        }
         String fullPath = sysArea.getFullPath() + "/";
         int i = removeById(id);
         if(i != 1){
@@ -111,6 +118,8 @@ public class SysAreaManage extends BaseManage<Long>{
         for(String idStr : ids.split(",")){
             count = count + delete(Long.parseLong(idStr));
         }
+        // 更新缓存
+        updateRedisAll();
         return count;
     }
 
@@ -172,6 +181,17 @@ public class SysAreaManage extends BaseManage<Long>{
         return sysAreaDTO;
     }
 
+    public void updateRedisAll(){
+        SysAreaDTO sysAreaDTO = new SysAreaDTO();
+        SysArea sysArea = findById(0L);
+        TransferUtil.transfer(sysAreaDTO, sysArea);
+        List<SysAreaDTO> children = getByParentId(0L);
+        sysAreaDTO.setChildren(children);
+        setChildren(children);
+        String sysAreaDTOJson = new JsonMapper().toJson(sysAreaDTO);
+        redisService.set("sysAreaDTOJson", sysAreaDTOJson);
+    }
+
     public void setChildren(List<SysAreaDTO> children){
         if(!CollectionUtils.isEmpty(children)){
             for(SysAreaDTO sysAreaDTO : children){
@@ -182,4 +202,34 @@ public class SysAreaManage extends BaseManage<Long>{
             }
         }
     }
+
+    private void updateChildRedis(SysArea sysArea){
+        SysAreaDTO newChild = new SysAreaDTO();
+        TransferUtil.transfer(newChild, sysArea);
+        SysAreaDTO sysAreaDTO = getAll();
+        List<SysAreaDTO> children = sysAreaDTO.getChildren();
+        updateChildRedisRecursion(children, newChild);
+        String sysAreaDTOJson = new JsonMapper().toJson(sysAreaDTO);
+        redisService.set("sysAreaDTOJson", sysAreaDTOJson);
+    }
+
+    private void updateChildRedisRecursion(List<SysAreaDTO> children, SysAreaDTO newChild){
+        for(SysAreaDTO child : children){
+            List<SysAreaDTO> children1 = child.getChildren();
+            if(child.getId() == newChild.getParentId()){
+                for(int i=0;i<children1.size();i++){
+                    SysAreaDTO sat = children1.get(i);
+                    if(sat.getId() == newChild.getId()){
+                        children1.set(i,newChild);
+                        break;
+                    }
+                }
+                children1.add(newChild);
+                break;
+            }else{
+                updateChildRedisRecursion(children1, newChild);
+            }
+        }
+    }
+
 }
