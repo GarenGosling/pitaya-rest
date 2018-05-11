@@ -47,14 +47,104 @@ public class SysAreaManage extends BaseManage<Long>{
             child.setLevel(level);
             getService().updateByKey(child);
             // 更新缓存
-            updateChildRedis(child);
+            refreshTreeRedis();
             return true;
         }else{
             return false;
         }
     }
 
-    public int update(SysArea sysArea){
+    public int updateMulti(List<SysArea> sysAreaList){
+        int count = 0;
+        for(SysArea sysArea : sysAreaList){
+            count = count + update(sysArea);
+        }
+        // 更新缓存
+        refreshTreeRedis();
+        return count;
+    }
+
+    public int deleteMulti(String ids){
+        int count = 0;
+        for(String idStr : ids.split(",")){
+            count = count + delete(Long.parseLong(idStr));
+        }
+        // 更新缓存
+        refreshTreeRedis();
+        return count;
+    }
+
+    public List<Map<String, Object>> getOptionsByParentId(Long parentId){
+        String sql = "select id as value, label from sys_area where parent_id = " + parentId;
+        List<Map<String, Object>> bySQL = getService().findBySQL(sql);
+        return bySQL;
+    }
+
+    public SysArea getByParentIdAndLabel(Long parentId, String label){
+        SysAreaQuery query = new SysAreaQuery();
+        SysAreaQuery.Criteria criteria = query.createCriteria();
+        criteria.andParentIdEqualTo(parentId);
+        criteria.andLabelEqualTo(label);
+        List<SysArea> sysAreaList = getService().findBy(query);
+        if(sysAreaList == null || sysAreaList.size() == 0){
+            return null;
+        }
+        return sysAreaList.get(0);
+    }
+
+    public SysAreaDTO getTree(){
+        Object redisObj = redisService.get("sysAreaDTOJson");
+        if(redisObj != null){
+            String json = (String) redisObj;
+            SysAreaDTO sysAreaDTO = new JsonMapper().fromJson(json, SysAreaDTO.class);
+            return sysAreaDTO;
+        }
+        return refreshTreeRedis();
+    }
+
+    public List<SysAreaDTO> getListAll(){
+        List<SysArea> sysAreaList = getService().findAll();
+        List<SysAreaDTO> sysAreaDTOList = new ArrayList<>();
+        for(SysArea sysArea : sysAreaList){
+            SysAreaDTO sysAreaDTO = new SysAreaDTO();
+            TransferUtil.transfer(sysAreaDTO, sysArea);
+            sysAreaDTOList.add(sysAreaDTO);
+        }
+        return sysAreaDTOList;
+    }
+
+    public List<SysAreaDTO> getByParentId(List<SysAreaDTO> all, Long parentId){
+        List<SysAreaDTO> children = new ArrayList<>();
+        for(SysAreaDTO sysAreaDTO : all){
+            if(sysAreaDTO.getParentId() == parentId){
+                children.add(sysAreaDTO);
+            }
+        }
+        return children;
+    }
+
+    public SysAreaDTO getById(List<SysAreaDTO> all, Long id){
+        for(SysAreaDTO sysAreaDTO : all){
+            if(sysAreaDTO.getId() == id){
+                return sysAreaDTO;
+            }
+        }
+        return null;
+    }
+
+
+    public void setChildren(List<SysAreaDTO> all, List<SysAreaDTO> children){
+        if(!CollectionUtils.isEmpty(children)){
+            for(SysAreaDTO sysAreaDTO : children){
+                Long parentId = sysAreaDTO.getId();
+                List<SysAreaDTO> children2 = getByParentId(all, parentId);
+                sysAreaDTO.setChildren(children2);
+                setChildren(all, children2);
+            }
+        }
+    }
+
+    private int update(SysArea sysArea){
         // 修改前
         SysArea before = findById(sysArea.getId());
         Long parentIdBefore = before.getParentId();
@@ -88,17 +178,7 @@ public class SysAreaManage extends BaseManage<Long>{
         return j + i;
     }
 
-    public int updateMulti(List<SysArea> sysAreaList){
-        int count = 0;
-        for(SysArea sysArea : sysAreaList){
-            count = count + update(sysArea);
-        }
-        // 更新缓存
-        updateRedisAll();
-        return count;
-    }
-
-    public int delete(Long id){
+    private int delete(Long id){
         SysArea sysArea = findById(id);
         if(sysArea == null){
             throw new BadRequestException("删除失败，原因：id不存在");
@@ -113,123 +193,14 @@ public class SysAreaManage extends BaseManage<Long>{
         return i + j;
     }
 
-    public int deleteMulti(String ids){
-        int count = 0;
-        for(String idStr : ids.split(",")){
-            count = count + delete(Long.parseLong(idStr));
-        }
-        // 更新缓存
-        updateRedisAll();
-        return count;
-    }
-
-
-
-
-
-    public List<SysAreaDTO> getByParentId(Long parentId){
-        SysAreaQuery query = new SysAreaQuery();
-        SysAreaQuery.Criteria criteria = query.createCriteria();
-        criteria.andParentIdEqualTo(parentId);
-        List<SysArea> sysAreaList = getService().findBy(query);
-        if(sysAreaList == null || sysAreaList.size() == 0){
-            return null;
-        }
-        List<SysAreaDTO> sysAreaDTOList = new ArrayList<>();
-        for(SysArea sysArea : sysAreaList){
-            SysAreaDTO sysAreaDTO = new SysAreaDTO();
-            TransferUtil.transfer(sysAreaDTO, sysArea);
-            sysAreaDTO.setChildren(new ArrayList<>());
-            sysAreaDTOList.add(sysAreaDTO);
-        }
-        return sysAreaDTOList;
-    }
-
-    public List<Map<String, Object>> getOptionsByParentId(Long parentId){
-        String sql = "select id as value, label from sys_area where parent_id = " + parentId;
-        List<Map<String, Object>> bySQL = getService().findBySQL(sql);
-        return bySQL;
-    }
-
-    public SysArea getByParentIdAndLabel(Long parentId, String label){
-        SysAreaQuery query = new SysAreaQuery();
-        SysAreaQuery.Criteria criteria = query.createCriteria();
-        criteria.andParentIdEqualTo(parentId);
-        criteria.andLabelEqualTo(label);
-        List<SysArea> sysAreaList = getService().findBy(query);
-        if(sysAreaList == null || sysAreaList.size() == 0){
-            return null;
-        }
-        return sysAreaList.get(0);
-    }
-
-    public SysAreaDTO getAll(){
-        Object redisObj = redisService.get("sysAreaDTOJson");
-        if(redisObj != null){
-            String json = (String) redisObj;
-            SysAreaDTO sysAreaDTO = new JsonMapper().fromJson(json, SysAreaDTO.class);
-            return sysAreaDTO;
-        }
-        SysAreaDTO sysAreaDTO = new SysAreaDTO();
-        SysArea sysArea = findById(0L);
-        TransferUtil.transfer(sysAreaDTO, sysArea);
-        List<SysAreaDTO> children = getByParentId(0L);
+    private SysAreaDTO refreshTreeRedis(){
+        List<SysAreaDTO> all = getListAll();
+        SysAreaDTO sysAreaDTO = getById(all, 0L);
+        List<SysAreaDTO> children = getByParentId(all, 0L);
         sysAreaDTO.setChildren(children);
-        setChildren(children);
+        setChildren(all, children);
         String sysAreaDTOJson = new JsonMapper().toJson(sysAreaDTO);
         redisService.set("sysAreaDTOJson", sysAreaDTOJson);
         return sysAreaDTO;
     }
-
-    public void updateRedisAll(){
-        SysAreaDTO sysAreaDTO = new SysAreaDTO();
-        SysArea sysArea = findById(0L);
-        TransferUtil.transfer(sysAreaDTO, sysArea);
-        List<SysAreaDTO> children = getByParentId(0L);
-        sysAreaDTO.setChildren(children);
-        setChildren(children);
-        String sysAreaDTOJson = new JsonMapper().toJson(sysAreaDTO);
-        redisService.set("sysAreaDTOJson", sysAreaDTOJson);
-    }
-
-    public void setChildren(List<SysAreaDTO> children){
-        if(!CollectionUtils.isEmpty(children)){
-            for(SysAreaDTO sysAreaDTO : children){
-                Long parentId = sysAreaDTO.getId();
-                List<SysAreaDTO> children2 = getByParentId(parentId);
-                sysAreaDTO.setChildren(children2);
-                setChildren(children2);
-            }
-        }
-    }
-
-    private void updateChildRedis(SysArea sysArea){
-        SysAreaDTO newChild = new SysAreaDTO();
-        TransferUtil.transfer(newChild, sysArea);
-        SysAreaDTO sysAreaDTO = getAll();
-        List<SysAreaDTO> children = sysAreaDTO.getChildren();
-        updateChildRedisRecursion(children, newChild);
-        String sysAreaDTOJson = new JsonMapper().toJson(sysAreaDTO);
-        redisService.set("sysAreaDTOJson", sysAreaDTOJson);
-    }
-
-    private void updateChildRedisRecursion(List<SysAreaDTO> children, SysAreaDTO newChild){
-        for(SysAreaDTO child : children){
-            List<SysAreaDTO> children1 = child.getChildren();
-            if(child.getId() == newChild.getParentId()){
-                for(int i=0;i<children1.size();i++){
-                    SysAreaDTO sat = children1.get(i);
-                    if(sat.getId() == newChild.getId()){
-                        children1.set(i,newChild);
-                        break;
-                    }
-                }
-                children1.add(newChild);
-                break;
-            }else{
-                updateChildRedisRecursion(children1, newChild);
-            }
-        }
-    }
-
 }

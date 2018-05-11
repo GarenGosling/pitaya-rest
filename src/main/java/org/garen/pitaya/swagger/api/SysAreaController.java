@@ -27,6 +27,13 @@ public class SysAreaController extends BaseModel {
     @Autowired
     SysAreaManage sysAreaManage;
 
+    @ApiOperation(value = "查询整棵树", notes = "查询整棵树")
+    @RequestMapping(value = "/getTree", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    ResponseEntity<ResponseModel> getTree(){
+        SysAreaDTO sysAreaDTO = sysAreaManage.getTree();
+        return new ResponseEntity<ResponseModel>(successModel("查询", sysAreaDTO), HttpStatus.OK);
+    }
+
     @ApiOperation(value = "新增", notes = "新增 ")
     @RequestMapping(value = "/save", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     ResponseEntity<ResponseModel> save(@RequestBody SysArea sysArea){
@@ -60,14 +67,6 @@ public class SysAreaController extends BaseModel {
     }
 
     @ApiOperation(value = "父ID查询", notes = "父ID查询")
-    @RequestMapping(value = "/getByParentId", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    ResponseEntity<ResponseModel> getByParentId(@ApiParam(value = "父ID查询") @Valid @RequestParam(value = "parentId", required = false) Long parentId){
-        sysAreaValid.getByParentIdValid(parentId);
-        List<SysAreaDTO> sysAreaDTOList = sysAreaManage.getByParentId(parentId);
-        return new ResponseEntity<ResponseModel>(successModel("上级编码查询", sysAreaDTOList), HttpStatus.OK);
-    }
-
-    @ApiOperation(value = "父ID查询", notes = "父ID查询")
     @RequestMapping(value = "/getOptionsByParentId", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     ResponseEntity<ResponseModel> getOptionsByParentId(@ApiParam(value = "父ID查询") @Valid @RequestParam(value = "parentId", required = false) Long parentId){
         sysAreaValid.getByParentIdValid(parentId);
@@ -83,24 +82,4 @@ public class SysAreaController extends BaseModel {
         TransferUtil.transfer(sysAreaDTO, sysArea);
         return new ResponseEntity<ResponseModel>(successModel("查询", sysAreaDTO), HttpStatus.OK);
     }
-
-    @ApiOperation(value = "初始化查询", notes = "初始化查询")
-    @RequestMapping(value = "/getInit", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    ResponseEntity<ResponseModel> getInit(){
-        Long rootId = 0L;
-        SysArea sysAreaRoot = sysAreaManage.findById(rootId);
-        SysAreaDTO rootDTO = new SysAreaDTO();
-        TransferUtil.transfer(rootDTO, sysAreaRoot);
-        List<SysAreaDTO> sysAreaDTOList = sysAreaManage.getByParentId(rootId);
-        rootDTO.setChildren(sysAreaDTOList);
-        return new ResponseEntity<ResponseModel>(successModel("初始化查询", rootDTO), HttpStatus.OK);
-    }
-
-    @ApiOperation(value = "查询所有", notes = "查询所有")
-    @RequestMapping(value = "/getAll", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    ResponseEntity<ResponseModel> getAll(){
-        SysAreaDTO sysAreaDTO = sysAreaManage.getAll();
-        return new ResponseEntity<ResponseModel>(successModel("查询", sysAreaDTO), HttpStatus.OK);
-    }
-
 }

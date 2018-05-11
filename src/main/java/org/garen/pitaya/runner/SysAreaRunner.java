@@ -14,7 +14,7 @@ public class SysAreaRunner implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         System.out.println("=========== redisSysAreaDTO beign ============");
-        sysAreaManage.getAll();
+        sysAreaManage.getTree();
         System.out.println("=========== redisSysAreaDTO end ============");
     }
 }
