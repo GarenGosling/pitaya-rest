@@ -12,8 +12,6 @@ public class SysDictionaryDTO {
     private String label;
     private String description;
     private String value;
-    private String extend1;
-    private String extend2;
-    private String extend3;
+    private String extend;
     private List<SysDictionaryDTO> children;
 }

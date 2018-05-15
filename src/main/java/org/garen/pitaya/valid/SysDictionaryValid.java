@@ -2,9 +2,7 @@ package org.garen.pitaya.valid;
 
 import org.apache.commons.lang3.StringUtils;
 import org.garen.pitaya.exception.BadRequestException;
-import org.garen.pitaya.mybatis.domain.SysArea;
 import org.garen.pitaya.mybatis.domain.SysDictionary;
-import org.garen.pitaya.service.SysAreaManage;
 import org.garen.pitaya.service.SysDictionaryManage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -29,7 +27,7 @@ public class SysDictionaryValid {
             throw new BadRequestException("父节点不能为空");
         }
         // 正确性校验: 父节点必需存在
-        SysArea byParentId = sysDictionaryManage.findById(sysDictionary.getParentId());
+        SysDictionary byParentId = sysDictionaryManage.findById(sysDictionary.getParentId());
         if(byParentId == null){
             throw new BadRequestException("父节点不存在");
         }
@@ -66,13 +64,13 @@ public class SysDictionaryValid {
             throw new BadRequestException("ID不能为空");
         }
         // 非空验证：ID必需存在
-        SysArea byId = sysDictionaryManage.findById(sysDictionary.getId());
+        SysDictionary byId = sysDictionaryManage.findById(sysDictionary.getId());
         if(byId == null){
             throw new BadRequestException("ID不存在");
         }
         // 唯一性校验: 父节点必需存在
         if(sysDictionary.getParentId() != -1){
-            SysArea byParentId = sysDictionaryManage.findById(sysDictionary.getParentId());
+            SysDictionary byParentId = sysDictionaryManage.findById(sysDictionary.getParentId());
             if(byParentId == null){
                 throw new BadRequestException("父节点不存在");
             }
