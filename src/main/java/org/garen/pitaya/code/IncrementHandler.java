@@ -5,11 +5,8 @@ import org.apache.commons.lang.StringUtils;
 import org.garen.pitaya.exception.BadRequestException;
 import org.garen.pitaya.exception.BusinessException;
 import org.garen.pitaya.serializable.SerializedObjHandler;
-import org.garen.pitaya.service.BaseManage;
 import org.garen.pitaya.service.CommonMethods;
-import org.garen.pitaya.swagger.model.SysAreaVo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
