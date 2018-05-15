@@ -20,8 +20,6 @@ public class SysDictionaryManage extends BaseManage<Long>{
     SysDictionaryService<SysDictionary, SysDictionaryQuery, Long> service;
     @Autowired
     RedisService redisService;
-    @Autowired
-    SysDictionaryValid sysDictionaryValid;
 
     @Override
     public SysDictionaryService<SysDictionary, SysDictionaryQuery, Long> getService() {
