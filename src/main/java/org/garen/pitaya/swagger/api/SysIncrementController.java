@@ -26,8 +26,8 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/api/sysIncrement")
 public class SysIncrementController extends BaseModel {
-//    @Value("${incrementPath}")
-    private String INCREMENT_PATH = "E:\\obj_store\\";
+    @Value("${increment.path}")
+    private String INCREMENT_PATH;
 
     @Autowired
     IncrementHandler incrementHandler;
