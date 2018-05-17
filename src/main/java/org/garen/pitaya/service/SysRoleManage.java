@@ -1,10 +1,11 @@
 package org.garen.pitaya.service;
 
 import org.apache.commons.lang3.StringUtils;
-import org.garen.pitaya.mybatis.domain.SysRole;
+import org.apache.ibatis.session.RowBounds;
+import org.garen.pitaya.mybatis.domain.*;
 import org.garen.pitaya.mybatis.domain.SysRoleQuery;
-import org.garen.pitaya.mybatis.domain.SysUser;
 import org.garen.pitaya.mybatis.service.SysRoleService;
+import org.garen.pitaya.swagger.model.SysRoleSearch;
 import org.garen.pitaya.swagger.model.SysRoleVo;
 import org.garen.pitaya.util.EsapiUtil;
 import org.garen.pitaya.util.TransferUtil;
@@ -145,5 +146,53 @@ public class SysRoleManage extends BaseManage<Long>{
         return getService().findBy(query);
     }
 
+    /**
+     * 分页构建query
+     * @param sysRoleSearch
+     * @return
+     */
+    private SysRoleQuery buildQuery(SysRoleSearch sysRoleSearch){
+        SysRoleQuery query = new SysRoleQuery();
+        SysRoleQuery.Criteria criteria = query.createCriteria();
+        if(sysRoleSearch != null){
+            if(sysRoleSearch.getStart() == null){
+                sysRoleSearch.setStart(0);
+            }
+            if(sysRoleSearch.getLength() == null){
+                sysRoleSearch.setLength(5);
+            }
+            if(StringUtils.isNotBlank(sysRoleSearch.getCode())){
+                criteria.andCodeEqualTo(sysRoleSearch.getCode().trim());
+            }
+            if(StringUtils.isNotBlank(sysRoleSearch.getName())){
+                criteria.andNameLike("%"+sysRoleSearch.getName().trim()+"%");
+            }
+            if(StringUtils.isNotBlank(sysRoleSearch.getProject())){
+                criteria.andProjectEqualTo(sysRoleSearch.getProject().trim());
+            }
+        }
+        return query;
+    }
 
+    /**
+     * 分页列表
+     * @param sysRoleSearch
+     * @return
+     */
+    public List<SysRole> getByPage(SysRoleSearch sysRoleSearch){
+        SysRoleQuery query = buildQuery(sysRoleSearch);
+        query.setOrderByClause("id desc");
+        return getService().findBy(new RowBounds(sysRoleSearch.getStart(), sysRoleSearch.getLength()), query);
+    }
+
+    /**
+     * 分页总数量
+     * @param sysRoleSearch
+     * @return
+     */
+    public int getPageCount(SysRoleSearch sysRoleSearch) {
+        return getService().countByExample(buildQuery(sysRoleSearch));
+    }
+    
+    
 }
