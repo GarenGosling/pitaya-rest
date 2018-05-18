@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang.StringUtils;
 import org.garen.pitaya.mybatis.domain.SysRole;
+import org.garen.pitaya.mybatis.domain.SysRoleDTO;
 import org.garen.pitaya.service.SysRoleManage;
 import org.garen.pitaya.swagger.model.*;
 import org.garen.pitaya.util.POIHandler;
@@ -30,7 +31,7 @@ public class SysRoleController extends BaseModel {
     @ApiOperation(value = "分页查询", notes = "分页查询")
     @RequestMapping(value = "/page", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     ResponseEntity<ResponseModel> getByPage(SysRoleSearch sysRoleSearch){
-        List<SysRole> list = sysRoleManage.getByPage(sysRoleSearch);
+        List<SysRoleDTO> list = sysRoleManage.getByPage(sysRoleSearch);
         int totalCount = sysRoleManage.getPageCount(sysRoleSearch);
         return new ResponseEntity<ResponseModel>(successModel("查询",page(list, totalCount)), HttpStatus.OK);
     }

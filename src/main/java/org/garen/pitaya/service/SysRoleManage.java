@@ -29,6 +29,8 @@ public class SysRoleManage extends BaseManage<Long>{
 
     @Autowired
     SysRoleValid sysRoleValid;
+    @Autowired
+    SysPermissionManage sysPermissionManage;
 
     /**
      * 新增
@@ -119,9 +121,9 @@ public class SysRoleManage extends BaseManage<Long>{
     public SysRole getByCode(String code){
         List<SysRole> listByParams = getListByParams(code, null, null);
         if(!CollectionUtils.isEmpty(listByParams)){
-            return null;
+            return listByParams.get(0);
         }
-        return listByParams.get(0);
+        return null;
     }
 
     /**
@@ -179,10 +181,44 @@ public class SysRoleManage extends BaseManage<Long>{
      * @param sysRoleSearch
      * @return
      */
-    public List<SysRole> getByPage(SysRoleSearch sysRoleSearch){
+    public List<SysRoleDTO> getByPage(SysRoleSearch sysRoleSearch){
         SysRoleQuery query = buildQuery(sysRoleSearch);
         query.setOrderByClause("id desc");
-        return getService().findBy(new RowBounds(sysRoleSearch.getStart(), sysRoleSearch.getLength()), query);
+        List<SysRole> sysRoles = getService().findBy(new RowBounds(sysRoleSearch.getStart(), sysRoleSearch.getLength()), query);
+        List<SysRoleDTO> sysRoleDTOList = new ArrayList<>();
+        for(SysRole sysRole : sysRoles){
+            SysRoleDTO sysRoleDTO = new SysRoleDTO();
+            TransferUtil.transfer(sysRoleDTO, sysRole);
+            String resourceIds = sysRole.getResourceIds();
+            if(StringUtils.isNotBlank(resourceIds)){
+                String resourceNames = getResourceNames(resourceIds);
+                sysRoleDTO.setResourceNames(resourceNames);
+            }
+            sysRoleDTOList.add(sysRoleDTO);
+        }
+        return sysRoleDTOList;
+    }
+
+    public String getResourceNames(String resourceIds){
+        String[] split = resourceIds.split(",");
+        List<Long> list = new ArrayList<>();
+        for(String str : split){
+            list.add(Long.parseLong(str));
+        }
+        SysPermissionQuery sysPermissionQuery = new SysPermissionQuery();
+        SysPermissionQuery.Criteria criteria = sysPermissionQuery.createCriteria();
+        criteria.andIdIn(list);
+        List<SysPermission> sysPermissionList = sysPermissionManage.getService().findBy(sysPermissionQuery);
+        String resourceNames = "";
+        if(!CollectionUtils.isEmpty(sysPermissionList)){
+            for(int i=0;i<sysPermissionList.size();i++){
+                resourceNames += sysPermissionList.get(i).getLabel();
+                if(i<sysPermissionList.size()-1){
+                    resourceNames += ",";
+                }
+            }
+        }
+        return resourceNames;
     }
 
     /**
