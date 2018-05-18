@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/api/sysRole")
@@ -75,6 +76,13 @@ public class SysRoleController extends BaseModel {
         }else{
             return new ResponseEntity<ResponseModel>(badRequestModel(failMsg), HttpStatus.OK);
         }
+    }
+
+    @ApiOperation(value = "下拉列表值", notes = "下拉列表值")
+    @RequestMapping(value = "/getOptionsAll", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    ResponseEntity<ResponseModel> getOptionsAll(){
+        List<Map<String, Object>> list = sysRoleManage.getOptionsAll();
+        return new ResponseEntity<ResponseModel>(successModel("上级编码查询", list), HttpStatus.OK);
     }
 
 }

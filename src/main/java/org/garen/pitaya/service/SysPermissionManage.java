@@ -77,6 +77,16 @@ public class SysPermissionManage extends BaseManage<Long>{
         return refreshTreeRedis();
     }
 
+    public SysPermissionDTO getTree(List<Long> idList){
+        if(CollectionUtils.isEmpty(idList)){
+            return null;
+        }
+        SysPermissionDTO tree = getTree();
+        List<SysPermissionDTO> children = tree.getChildren();
+        setChildren2(children, idList);
+        return tree;
+    }
+
     public List<SysPermissionDTO> getListAll(){
         List<SysPermission> sysPermissionList = getService().findAll();
         List<SysPermissionDTO> sysPermissionDTOList = new ArrayList<>();
@@ -115,6 +125,23 @@ public class SysPermissionManage extends BaseManage<Long>{
                 List<SysPermissionDTO> children2 = getByParentId(all, parentId);
                 sysPermissionDTO.setChildren(children2);
                 setChildren(all, children2);
+            }
+        }
+    }
+
+    public void setChildren2(List<SysPermissionDTO> children, List<Long> idList){
+        if(!CollectionUtils.isEmpty(children)){
+            List<SysPermissionDTO> tmpList = new ArrayList<>();
+            for(int i=0;i<children.size();i++){
+                tmpList.add(children.get(i));
+            }
+            for(int i=0;i<tmpList.size();i++){
+                SysPermissionDTO sysPermissionDTO = tmpList.get(i);
+                if(!idList.contains(sysPermissionDTO.getId())){
+                    children.remove(sysPermissionDTO);
+                }else{
+                    setChildren2(sysPermissionDTO.getChildren(), idList);
+                }
             }
         }
     }

@@ -16,6 +16,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class SysRoleManage extends BaseManage<Long>{
@@ -229,6 +230,11 @@ public class SysRoleManage extends BaseManage<Long>{
     public int getPageCount(SysRoleSearch sysRoleSearch) {
         return getService().countByExample(buildQuery(sysRoleSearch));
     }
-    
+
+    public List<Map<String, Object>> getOptionsAll(){
+        String sql = "select code as value, name as label from sys_role";
+        List<Map<String, Object>> bySQL = getService().findBySQL(sql);
+        return bySQL;
+    }
     
 }
