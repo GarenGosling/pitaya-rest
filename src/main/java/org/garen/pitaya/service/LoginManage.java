@@ -13,6 +13,7 @@ import org.garen.pitaya.valid.LoginValid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.ServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,14 @@ public class LoginManage {
         loginValid.validExist(byNickName, password);
         // 登录成功，返回登录信息对象
         return getLoginInfo(loginName, byNickName);
+    }
+
+    public boolean logout(String ticket){
+        Long delH = redisService.delH(ticket, "loginInfo");
+       if(delH == 1L){
+           return true;
+       }
+       return false;
     }
 
     /**
