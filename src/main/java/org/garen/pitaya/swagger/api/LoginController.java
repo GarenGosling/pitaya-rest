@@ -35,7 +35,7 @@ public class LoginController extends BaseModel {
     }
 
     @ApiOperation(value = "退出", notes = "退出")
-    @RequestMapping(value = "/logout", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/api/logout", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     ResponseEntity<ResponseModel> logout(HttpServletRequest request){
         String ticket = request.getHeader("ticket");
         boolean logout = loginManage.logout(ticket);
