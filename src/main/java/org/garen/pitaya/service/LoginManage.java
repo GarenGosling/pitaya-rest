@@ -67,11 +67,12 @@ public class LoginManage {
         if(StringUtils.isBlank(loginName)){
             return null;
         }
-        // 从redis中获取loginInfo
-        String loginInfoJson = redisService.getH(loginName, "loginInfo");
-        if(StringUtils.isNotBlank(loginInfoJson)){
-            return new JsonMapper().fromJson(loginInfoJson, LoginInfo.class);
-        }
+        logout(loginName);
+//        // 从redis中获取loginInfo
+//        String loginInfoJson = redisService.getH(loginName, "loginInfo");
+//        if(StringUtils.isNotBlank(loginInfoJson)){
+//            return new JsonMapper().fromJson(loginInfoJson, LoginInfo.class);
+//        }
         // 重新构建loginInfo
         LoginInfo loginInfo = new LoginInfo();
         // 用户信息

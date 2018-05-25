@@ -12,5 +12,6 @@ public class SysPermissionDTO {
     private String type;
     private String url;
     private Boolean available;
+    private String icon;
     private List<SysPermissionDTO> children;
 }
