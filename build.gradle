@@ -65,16 +65,6 @@ dependencies {
 
     compile group: 'com.github.pagehelper', name: 'pagehelper',version:'4.1.0'
 
-    //
-    compile (group: 'org.owasp.esapi', name: 'esapi', version: '2.1.0'){
-        exclude(group: 'commons-logging', module: 'commons-logging')
-        exclude(group: 'commons-collections', module: 'commons-collections')
-        exclude(group: 'xml-apis', module: 'xml-apis')
-        exclude(group: 'xerces', module: 'xercesImpl')
-        exclude(group: 'commons-beanutils', module: 'commons-beanutils')
-        exclude(group: 'commons-codec', module: 'commons-codec')
-    }
-
     //swagger
     compile group: 'io.springfox', name: 'springfox-swagger2',version:'2.5.0'
     compile group: 'io.springfox', name: 'springfox-swagger-ui',version:'2.5.0'

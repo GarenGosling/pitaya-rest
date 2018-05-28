@@ -1,8 +1,5 @@
 package org.garen.pitaya.util;
 
-import org.owasp.esapi.ESAPI;
-import org.owasp.esapi.codecs.MySQLCodec;
-import org.owasp.esapi.codecs.MySQLCodec.Mode;
 
 /**
  * SQL注入攻击防护
@@ -20,8 +17,7 @@ public class EsapiUtil {
 	 * @return
 	 */
 	public static String sql(String str) {
-		MySQLCodec codec = new MySQLCodec(Mode.ANSI);
-		return ESAPI.encoder().encodeForSQL(codec, str);
+		return str;
 	}
 
 }
