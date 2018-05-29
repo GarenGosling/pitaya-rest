@@ -137,7 +137,7 @@ public class SysPermissionManage extends BaseManage<Long>{
             }
             for(int i=0;i<tmpList.size();i++){
                 SysPermissionDTO sysPermissionDTO = tmpList.get(i);
-                if(!idList.contains(sysPermissionDTO.getId())){
+                if(!idList.contains(sysPermissionDTO.getId()) || !sysPermissionDTO.getAvailable()){
                     children.remove(sysPermissionDTO);
                 }else{
                     setChildren2(sysPermissionDTO.getChildren(), idList);
