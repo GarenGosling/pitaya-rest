@@ -3,7 +3,6 @@ package org.garen.pitaya.service;
 import org.garen.pitaya.exception.BadRequestException;
 import org.garen.pitaya.mybatis.domain.*;
 import org.garen.pitaya.mybatis.service.TOrgService;
-import org.garen.pitaya.mybatis.service.TPostService;
 import org.garen.pitaya.redis.RedisService;
 import org.garen.pitaya.swagger.model.TOrgVo;
 import org.garen.pitaya.util.JsonMapper;
@@ -17,9 +16,9 @@ import java.util.Date;
 import java.util.List;
 
 @Service
-public class TOrgManage extends BaseManage<Long>{
+public class TOrgManage extends BaseManage<String>{
     @Autowired
-    TOrgService<TOrg, TOrgQuery, Long> service;
+    TOrgService<TOrg, TOrgQuery, String> service;
     @Autowired
     RedisService redisService;
     @Autowired
@@ -28,7 +27,7 @@ public class TOrgManage extends BaseManage<Long>{
     THrManage tHrManage;
 
     @Override
-    public TOrgService<TOrg, TOrgQuery, Long> getService() {
+    public TOrgService<TOrg, TOrgQuery, String> getService() {
         return service;
     }
 
@@ -49,7 +48,7 @@ public class TOrgManage extends BaseManage<Long>{
     }
 
     public boolean update(TOrgVo tOrgVo){
-        TOrgDTO before = getByCode(getListAll(), tOrgVo.getCode());
+        TOrgDTO before = getById(getListAll(), tOrgVo.getId());
         String fullPathBefore = before.getFullPath();
         String fullNameBefore = before.getFullName();
         TOrg tOrg = new TOrg();
@@ -67,25 +66,25 @@ public class TOrgManage extends BaseManage<Long>{
         }
     }
 
-    public int deleteMulti(String codes){
+    public int deleteMulti(String ids){
         int count = 0;
-        for(String code : codes.split(",")){
-            count = count + delete(code);
+        for(String id : ids.split(",")){
+            count = count + delete(id);
         }
         // 更新缓存
         refreshTreeRedis(getTreeByDB(ROOT_NODE));
         return count;
     }
 
-    private int delete(String code){
-        TOrg byCode = getByCode(code);
-        if(byCode == null){
+    private int delete(String id){
+        TOrg byId = getById(id);
+        if(byId == null){
             throw new BadRequestException("删除失败，原因：编码不存在");
         }
-        String fullPath = byCode.getFullPath() + "/";
+        String fullPath = byId.getFullPath() + "/";
         TOrgQuery tOrgQuery = new TOrgQuery();
         TOrgQuery.Criteria criteria = tOrgQuery.createCriteria();
-        criteria.andCodeEqualTo(code);
+        criteria.andIdEqualTo(id);
         int i = getService().delete(tOrgQuery);
         if(i != 1){
             throw new BadRequestException("删除失败");
@@ -123,29 +122,32 @@ public class TOrgManage extends BaseManage<Long>{
         return refreshTreeRedis(tOrgDTO);
     }
 
-    public List<TOrgDTO> getByParentCode(List<TOrgDTO> all, String parentCode){
+    public List<TOrgDTO> getByParentId(List<TOrgDTO> all, String parentId){
         List<TOrgDTO> children = new ArrayList<>();
         for(TOrgDTO tOrgDTO : all){
-            if(tOrgDTO.getParentCode().equals(parentCode)){
+            if(tOrgDTO.getParentId().equals(parentId)){
                 children.add(tOrgDTO);
             }
         }
         return children;
     }
 
-    public TOrgDTO getByCode(List<TOrgDTO> all, String code){
+    public TOrgDTO getById(List<TOrgDTO> all, String id){
+        if(CollectionUtils.isEmpty(all)){
+            return null;
+        }
         for(TOrgDTO tOrgDTO : all){
-            if(tOrgDTO.getCode().equals(code)){
+            if(tOrgDTO.getId().equals(id)){
                 return tOrgDTO;
             }
         }
         return null;
     }
 
-    public TOrg getByCode(String code){
+    public TOrg getById(String id){
         TOrgQuery query = new TOrgQuery();
         TOrgQuery.Criteria criteria = query.createCriteria();
-        criteria.andCodeEqualTo(code);
+        criteria.andIdEqualTo(id);
         List<TOrg> tOrgList = getService().findBy(query);
         if(!CollectionUtils.isEmpty(tOrgList)){
             return tOrgList.get(0);
@@ -155,22 +157,25 @@ public class TOrgManage extends BaseManage<Long>{
 
     /**
      * 数据库获取树
-     * @param orgCode
+     * @param orgId
      * @return
      */
-    public TOrgDTO getTreeByDB(String orgCode){
+    public TOrgDTO getTreeByDB(String orgId){
         // org
         List<TOrgDTO> all = getListAll();
-        TOrgDTO tOrgDTO = getByCode(all, orgCode);
-        List<TOrgDTO> children = getByParentCode(all, orgCode);
+        TOrgDTO tOrgDTO = getById(all, orgId);
+        if(tOrgDTO == null){
+            return null;
+        }
+        List<TOrgDTO> children = getByParentId(all, orgId);
         tOrgDTO.setChildren(children);
         // post
         List<TPostDTO> postAll = tPostManage.getListAll();
-        List<TPostDTO> postChildren = tPostManage.getByOrgCode(postAll, orgCode);
+        List<TPostDTO> postChildren = tPostManage.getByOrgId(postAll, orgId);
         tOrgDTO.setPostChildren(postChildren);
         // hr
         List<THrDTO> hrAll = tHrManage.getListAll();
-        List<THrDTO> hrChildren = tHrManage.getByOrgCode(hrAll, orgCode);
+        List<THrDTO> hrChildren = tHrManage.getByOrgId(hrAll, orgId);
         tOrgDTO.setHrChildren(hrChildren);
         // 递归设置子节点
         setChildren(children, all, postAll, hrAll);
@@ -191,14 +196,14 @@ public class TOrgManage extends BaseManage<Long>{
         if(!CollectionUtils.isEmpty(children)){
             for(TOrgDTO tOrgDTO : children){
                 // org
-                String parentCode = tOrgDTO.getCode();
-                List<TOrgDTO> children2 = getByParentCode(all, parentCode);
+                String parentId = tOrgDTO.getId();
+                List<TOrgDTO> children2 = getByParentId(all, parentId);
                 tOrgDTO.setChildren(children2);
                 // post
-                List<TPostDTO> postChildren = tPostManage.getByOrgCode(postAll, parentCode);
+                List<TPostDTO> postChildren = tPostManage.getByOrgId(postAll, parentId);
                 tOrgDTO.setPostChildren(postChildren);
                 // hr
-                List<THrDTO> hrChildren = tHrManage.getByOrgCode(hrAll, parentCode);
+                List<THrDTO> hrChildren = tHrManage.getByOrgId(hrAll, parentId);
                 tOrgDTO.setHrChildren(hrChildren);
                 // 递归设置子节点
                 setChildren(children2, all, postAll, hrAll);
@@ -206,11 +211,11 @@ public class TOrgManage extends BaseManage<Long>{
         }
     }
 
-    public TOrg getByParentCodeAndName(String parentCode, String name){
+    public TOrg getByParentIdAndLabel(String parentId, String label){
         TOrgQuery query = new TOrgQuery();
         TOrgQuery.Criteria criteria = query.createCriteria();
-        criteria.andParentCodeEqualTo(parentCode);
-        criteria.andNameEqualTo(name);
+        criteria.andParentIdEqualTo(parentId);
+        criteria.andLabelEqualTo(label);
         List<TOrg> by = getService().findBy(query);
         if(!CollectionUtils.isEmpty(by)){
             return by.get(0);

@@ -7,9 +7,9 @@ import java.util.List;
 
 @Data
 public class TOrgDTO {
-    private String code;
-    private String name;
-    private String parentCode;
+    private String id;
+    private String label;
+    private String parentId;
     private String fullName;
     private String fullPath;
     private Boolean available;

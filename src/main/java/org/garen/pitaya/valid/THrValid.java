@@ -4,12 +4,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.garen.pitaya.exception.BadRequestException;
 import org.garen.pitaya.mybatis.domain.THr;
 import org.garen.pitaya.mybatis.domain.TOrg;
-import org.garen.pitaya.mybatis.domain.TPost;
 import org.garen.pitaya.service.THrManage;
 import org.garen.pitaya.service.TOrgManage;
 import org.garen.pitaya.service.TPostManage;
 import org.garen.pitaya.swagger.model.THrVo;
-import org.garen.pitaya.swagger.model.TPostVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -34,20 +32,20 @@ public class THrValid {
             throw new BadRequestException("参数对象不能为空");
         }
         // 非空验证：编码
-        if(StringUtils.isBlank(tHrVo.getCode())){
+        if(StringUtils.isBlank(tHrVo.getId())){
             throw new BadRequestException("节点编码不能为空");
         }
         // 非空验证：名称
-        if(StringUtils.isBlank(tHrVo.getName())){
+        if(StringUtils.isBlank(tHrVo.getLabel())){
             throw new BadRequestException("节点名称不能为空");
         }
         // 非空验证：组织编码
-        if(StringUtils.isBlank(tHrVo.getOrgCode())){
+        if(StringUtils.isBlank(tHrVo.getOrgId())){
             throw new BadRequestException("组织编码不能为空");
         }
         // 唯一性校验: 组织编码必需存在
-        if(!tOrgManage.ROOT_NODE.equals(tHrVo.getOrgCode())){
-            TOrg tOrg = tOrgManage.getByCode(tHrVo.getOrgCode());
+        if(!tOrgManage.ROOT_NODE.equals(tHrVo.getOrgId())){
+            TOrg tOrg = tOrgManage.getById(tHrVo.getOrgId());
             if(tOrg == null){
                 throw new BadRequestException("组织编码不存在");
             }
@@ -64,17 +62,17 @@ public class THrValid {
             throw new BadRequestException("参数对象不能为空");
         }
         // 非空验证：编码
-        if(StringUtils.isBlank(tHrVo.getCode())){
+        if(StringUtils.isBlank(tHrVo.getId())){
             throw new BadRequestException("节点编码不能为空");
         }
         // 非空验证：编码必需存在
-        THr byCode = tHrManage.getByCode(tHrVo.getCode());
-        if(byCode == null){
+        THr byId = tHrManage.getById(tHrVo.getId());
+        if(byId == null){
             throw new BadRequestException("编码不存在");
         }
         // 唯一性校验: 组织编码必需存在
-        if(!tOrgManage.ROOT_NODE.equals(tHrVo.getOrgCode())){
-            TOrg tOrg = tOrgManage.getByCode(tHrVo.getOrgCode());
+        if(!tOrgManage.ROOT_NODE.equals(tHrVo.getOrgId())){
+            TOrg tOrg = tOrgManage.getById(tHrVo.getOrgId());
             if(tOrg == null){
                 throw new BadRequestException("组织编码不存在");
             }
@@ -83,20 +81,20 @@ public class THrValid {
 
     /**
      * 验证：删除接口
-     * @param code
+     * @param id
      */
-    public void deleteValid(String code){
-        if(StringUtils.isBlank(code)){
+    public void deleteValid(String id){
+        if(StringUtils.isBlank(id)){
             throw new BadRequestException("编码不能为空");
         }
     }
 
     /**
      * 验证：编码查询接口
-     * @param code
+     * @param id
      */
-    public void getByCodeValid(String code){
-        if(StringUtils.isBlank(code)){
+    public void getByIdValid(String id){
+        if(StringUtils.isBlank(id)){
             throw new BadRequestException("编码不能为空");
         }
     }

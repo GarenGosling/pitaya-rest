@@ -1,12 +1,10 @@
 package org.garen.pitaya.service;
 
-import org.garen.pitaya.exception.BadRequestException;
 import org.garen.pitaya.mybatis.domain.*;
 import org.garen.pitaya.mybatis.domain.THrDTO;
 import org.garen.pitaya.mybatis.service.THrService;
 import org.garen.pitaya.redis.RedisService;
 import org.garen.pitaya.swagger.model.THrVo;
-import org.garen.pitaya.util.JsonMapper;
 import org.garen.pitaya.util.TransferUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,9 +15,9 @@ import java.util.Date;
 import java.util.List;
 
 @Service
-public class THrManage extends BaseManage<Long>{
+public class THrManage extends BaseManage<String>{
     @Autowired
-    THrService<THr, THrQuery, Long> service;
+    THrService<THr, THrQuery, String> service;
     @Autowired
     RedisService redisService;
     @Autowired
@@ -27,7 +25,7 @@ public class THrManage extends BaseManage<Long>{
 
 
     @Override
-    public THrService<THr, THrQuery, Long> getService() {
+    public THrService<THr, THrQuery, String> getService() {
         return service;
     }
 
@@ -68,38 +66,44 @@ public class THrManage extends BaseManage<Long>{
         return count;
     }
 
-    private int delete(String code){
+    private int delete(String id){
         THrQuery tHrQuery = new THrQuery();
         THrQuery.Criteria criteria = tHrQuery.createCriteria();
-        criteria.andCodeEqualTo(code);
+        criteria.andIdEqualTo(id);
         return getService().delete(tHrQuery);
     }
 
     public List<THrDTO> getListAll(){
-        List<THr> THrList = getService().findAll();
-        List<THrDTO> THrDTOList = new ArrayList<>();
-        for(THr THr : THrList){
-            THrDTO THrDTO = new THrDTO();
-            TransferUtil.transfer(THrDTO, THr);
-            THrDTOList.add(THrDTO);
+        List<THr> tHrList = getService().findAll();
+        if(CollectionUtils.isEmpty(tHrList)){
+            return null;
         }
-        return THrDTOList;
+        List<THrDTO> tHrDTOList = new ArrayList<>();
+        for(THr tHr : tHrList){
+            THrDTO tHrDTO = new THrDTO();
+            TransferUtil.transfer(tHrDTO, tHr);
+            tHrDTOList.add(tHrDTO);
+        }
+        return tHrDTOList;
     }
 
-    public List<THrDTO> getByOrgCode(List<THrDTO> all, String orgCode){
+    public List<THrDTO> getByOrgId(List<THrDTO> all, String orgId){
+        if(CollectionUtils.isEmpty(all)){
+            return new ArrayList<THrDTO>();
+        }
         List<THrDTO> tHrDTOList = new ArrayList<>();
         for(THrDTO tHrDTO : all){
-            if(tHrDTO.getOrgCode().equals(orgCode)){
+            if(tHrDTO.getOrgId().equals(orgId)){
                 tHrDTOList.add(tHrDTO);
             }
         }
         return tHrDTOList;
     }
 
-    public THr getByCode(String code){
+    public THr getById(String id){
         THrQuery query = new THrQuery();
         THrQuery.Criteria criteria = query.createCriteria();
-        criteria.andCodeEqualTo(code);
+        criteria.andIdEqualTo(id);
         List<THr> THrList = getService().findBy(query);
         if(!CollectionUtils.isEmpty(THrList)){
             return THrList.get(0);

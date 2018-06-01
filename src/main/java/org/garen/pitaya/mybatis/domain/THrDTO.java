@@ -6,10 +6,11 @@ import java.util.List;
 
 @Data
 public class THrDTO {
+    private String id;
+    private String label;
     private String empNo;
-    private String empName;
-    private String orgCode;
-    private String postCode;
+    private String orgId;
+    private String postId;
     private String fullName;
     private String fullPath;
     private String idNum;

@@ -2,13 +2,11 @@ package org.garen.pitaya.swagger.model;
 
 import lombok.Data;
 
-import java.util.Date;
-
 @Data
 public class TPostVo {
-    private String code;
-    private String name;
-    private String orgCode;
+    private String id;
+    private String label;
+    private String orgId;
     private String fullName;
     private String fullPath;
     private Boolean available;

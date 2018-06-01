@@ -9,9 +9,9 @@ import java.io.Serializable;
 @Service
 public class TOrgService<T,Q,PK extends Serializable> extends CommonsService<T, Q, PK> {
     @Autowired
-    TOrgMapper<T, Q, PK> TOrg;
+    TOrgMapper<T, Q, PK> tOrgMapper;
     @Override
     public TOrgMapper<T, Q, PK> getMapper() {
-        return TOrg;
+        return tOrgMapper;
     }
 }

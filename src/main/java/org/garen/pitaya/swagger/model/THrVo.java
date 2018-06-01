@@ -6,10 +6,11 @@ import java.util.Date;
 
 @Data
 public class THrVo {
-    private String code;
-    private String name;
-    private String orgCode;
-    private String postCode;
+    private String id;
+    private String label;
+    private String empNo;
+    private String orgId;
+    private String postId;
     private String fullName;
     private String fullPath;
     private String idNum;
@@ -31,6 +32,4 @@ public class THrVo {
     private Double workAge;
     private String workStatus;
     private Boolean available;
-    private Date createTime;
-    private Date updateTime;
 }

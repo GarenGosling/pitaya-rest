@@ -7,7 +7,6 @@ import org.garen.pitaya.mybatis.domain.TPostQuery;
 import org.garen.pitaya.mybatis.service.TPostService;
 import org.garen.pitaya.redis.RedisService;
 import org.garen.pitaya.swagger.model.TPostVo;
-import org.garen.pitaya.util.JsonMapper;
 import org.garen.pitaya.util.TransferUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,16 +17,16 @@ import java.util.Date;
 import java.util.List;
 
 @Service
-public class TPostManage extends BaseManage<Long>{
+public class TPostManage extends BaseManage<String>{
     @Autowired
-    TPostService<TPost, TPostQuery, Long> service;
+    TPostService<TPost, TPostQuery, String> service;
     @Autowired
     RedisService redisService;
     @Autowired
     TOrgManage tOrgManage;
 
     @Override
-    public TPostService<TPost, TPostQuery, Long> getService() {
+    public TPostService<TPost, TPostQuery, String> getService() {
         return service;
     }
 
@@ -58,20 +57,20 @@ public class TPostManage extends BaseManage<Long>{
         }
     }
 
-    public int deleteMulti(String codes){
+    public int deleteMulti(String ids){
         int count = 0;
-        for(String code : codes.split(",")){
-            count = count + delete(code);
+        for(String id : ids.split(",")){
+            count = count + delete(id);
         }
         // 更新缓存
         tOrgManage.refreshTreeRedis(tOrgManage.getTreeByDB(tOrgManage.ROOT_NODE));
         return count;
     }
 
-    private int delete(String code){
+    private int delete(String id){
         TPostQuery TPostQuery = new TPostQuery();
         TPostQuery.Criteria criteria = TPostQuery.createCriteria();
-        criteria.andCodeEqualTo(code);
+        criteria.andIdEqualTo(id);
         int i = getService().delete(TPostQuery);
         if(i != 1){
             throw new BadRequestException("删除失败");
@@ -80,30 +79,36 @@ public class TPostManage extends BaseManage<Long>{
     }
 
     public List<TPostDTO> getListAll(){
-        List<TPost> TPostList = getService().findAll();
-        List<TPostDTO> TPostDTOList = new ArrayList<>();
-        for(TPost TPost : TPostList){
-            TPostDTO TPostDTO = new TPostDTO();
-            TransferUtil.transfer(TPostDTO, TPost);
-            TPostDTOList.add(TPostDTO);
+        List<TPost> tPostList = getService().findAll();
+        List<TPostDTO> tPostDTOList = new ArrayList<>();
+        if(CollectionUtils.isEmpty(tPostDTOList)){
+            return null;
         }
-        return TPostDTOList;
+        for(TPost tPost : tPostList){
+            TPostDTO tPostDTO = new TPostDTO();
+            TransferUtil.transfer(tPostDTO, tPost);
+            tPostDTOList.add(tPostDTO);
+        }
+        return tPostDTOList;
     }
 
-    public List<TPostDTO> getByOrgCode(List<TPostDTO> all, String orgCode){
+    public List<TPostDTO> getByOrgId(List<TPostDTO> all, String orgId){
+        if(CollectionUtils.isEmpty(all)){
+            return new ArrayList<TPostDTO>();
+        }
         List<TPostDTO> tPostDTOList = new ArrayList<>();
         for(TPostDTO tPostDTO : all){
-            if(tPostDTO.getOrgCode().equals(orgCode)){
+            if(tPostDTO.getOrgId().equals(orgId)){
                 tPostDTOList.add(tPostDTO);
             }
         }
         return tPostDTOList;
     }
 
-    public TPost getByCode(String code){
+    public TPost getById(String id){
         TPostQuery query = new TPostQuery();
         TPostQuery.Criteria criteria = query.createCriteria();
-        criteria.andCodeEqualTo(code);
+        criteria.andIdEqualTo(id);
         List<TPost> tPostList = getService().findBy(query);
         if(!CollectionUtils.isEmpty(tPostList)){
             return tPostList.get(0);
@@ -111,11 +116,11 @@ public class TPostManage extends BaseManage<Long>{
         return null;
     }
 
-    public TPost getByOrgCodeAndName(String orgCode, String name){
+    public TPost getByOrgIdAndLabel(String orgId, String label){
         TPostQuery query = new TPostQuery();
         TPostQuery.Criteria criteria = query.createCriteria();
-        criteria.andOrgCodeEqualTo(orgCode);
-        criteria.andNameEqualTo(name);
+        criteria.andOrgIdEqualTo(orgId);
+        criteria.andLabelEqualTo(label);
         List<TPost> tPostList = getService().findBy(query);
         if(!CollectionUtils.isEmpty(tPostList)){
             return tPostList.get(0);

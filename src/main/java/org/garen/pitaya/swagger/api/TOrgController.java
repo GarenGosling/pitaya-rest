@@ -2,17 +2,13 @@ package org.garen.pitaya.swagger.api;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.garen.pitaya.mybatis.domain.SysPermission;
-import org.garen.pitaya.mybatis.domain.SysPermissionDTO;
 import org.garen.pitaya.mybatis.domain.TOrg;
 import org.garen.pitaya.mybatis.domain.TOrgDTO;
-import org.garen.pitaya.service.SysPermissionManage;
 import org.garen.pitaya.service.TOrgManage;
 import org.garen.pitaya.swagger.model.BaseModel;
 import org.garen.pitaya.swagger.model.ResponseModel;
 import org.garen.pitaya.swagger.model.TOrgVo;
 import org.garen.pitaya.util.TransferUtil;
-import org.garen.pitaya.valid.SysPermissionValid;
 import org.garen.pitaya.valid.TOrgValid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @RestController
 @RequestMapping(value = "/api/tOrg")
@@ -64,19 +59,19 @@ public class TOrgController extends BaseModel {
 
     @ApiOperation(value = "删除", notes = "删除")
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    ResponseEntity<ResponseModel> delete(@ApiParam(value = "主键") @Valid @RequestParam(value = "codes", required = false) String codes){
-        for(String code : codes.split(",")){
-            tOrgValid.deleteValid(code);
+    ResponseEntity<ResponseModel> delete(@ApiParam(value = "主键") @Valid @RequestParam(value = "ids", required = false) String ids){
+        for(String id : ids.split(",")){
+            tOrgValid.deleteValid(id);
         }
-        int i = tOrgManage.deleteMulti(codes);
+        int i = tOrgManage.deleteMulti(ids);
         return new ResponseEntity<ResponseModel>(successModel().data("删除节点数量："+i), HttpStatus.OK);
     }
 
     @ApiOperation(value = "编码查询", notes = "编码查询")
-    @RequestMapping(value = "/getByCode", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    ResponseEntity<ResponseModel> getByCode(@ApiParam(value = "编码查询") @Valid @RequestParam(value = "code", required = false) String code){
-        tOrgValid.getByCodeValid(code);
-        TOrg tOrg = tOrgManage.getByCode(code);
+    @RequestMapping(value = "/getById", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    ResponseEntity<ResponseModel> getById(@ApiParam(value = "编码查询") @Valid @RequestParam(value = "id", required = false) String id){
+        tOrgValid.getByIdValid(id);
+        TOrg tOrg = tOrgManage.getById(id);
         TOrgDTO tOrgDTO = new TOrgDTO();
         TransferUtil.transfer(tOrgDTO, tOrg);
         return new ResponseEntity<ResponseModel>(successModel("查询", tOrgDTO), HttpStatus.OK);

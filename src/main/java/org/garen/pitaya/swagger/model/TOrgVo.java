@@ -4,11 +4,12 @@ import lombok.Data;
 
 @Data
 public class TOrgVo {
-    private String code;
-    private String name;
-    private String parentCode;
+    private String id;
+    private String label;
+    private String parentId;
     private String fullName;
     private String fullPath;
     private Boolean available;
     private Integer level;
+
 }
