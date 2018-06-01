@@ -56,7 +56,7 @@ public class TOrgManage extends BaseManage<String>{
         int i = getService().updateByKey(tOrg);
         if(i == 1){
             // 修改所有子节点
-            String sql = "update sys_org set full_path = replace(full_path,"+ fullPathBefore +","+tOrg.getFullPath()+"), full_name = replace(full_name,"+ fullNameBefore +","+tOrg.getFullName()+") where full_path like '%"+fullPathBefore+"%'";
+            String sql = "update t_org set full_path = replace(full_path,'"+ fullPathBefore.trim() +"','"+tOrg.getFullPath().trim()+"'), full_name = replace(full_name,'"+ fullNameBefore.trim() +"','"+tOrg.getFullName().trim()+"') where full_path like '%"+fullPathBefore.trim()+"%'";
             getService().updateBySQL(sql);
             // 更新缓存
             refreshTreeRedis(getTreeByDB(ROOT_NODE));

@@ -2,6 +2,8 @@ package org.garen.pitaya.swagger.api;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import javassist.compiler.TokenId;
+import org.garen.pitaya.code.Tid;
 import org.garen.pitaya.mybatis.domain.TPost;
 import org.garen.pitaya.mybatis.domain.TPostDTO;
 import org.garen.pitaya.service.TPostManage;
@@ -22,9 +24,18 @@ import javax.validation.Valid;
 @RequestMapping(value = "/api/tPost")
 public class TPostController extends BaseModel {
     @Autowired
+    Tid tid;
+    @Autowired
     TPostValid tPostValid;
     @Autowired
     TPostManage tPostManage;
+
+    @ApiOperation(value = "获取新的岗位ID", notes = "获取新的岗位ID")
+    @RequestMapping(value = "/getId", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    ResponseEntity<ResponseModel> getId(){
+        String id = tid.getTPostId();
+        return new ResponseEntity<ResponseModel>(successModel("查询", id), HttpStatus.OK);
+    }
 
     @ApiOperation(value = "新增", notes = "新增 ")
     @RequestMapping(value = "/save", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)

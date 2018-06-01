@@ -2,6 +2,7 @@ package org.garen.pitaya.swagger.api;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.garen.pitaya.code.Tid;
 import org.garen.pitaya.mybatis.domain.THr;
 import org.garen.pitaya.mybatis.domain.THrDTO;
 import org.garen.pitaya.service.THrManage;
@@ -11,6 +12,7 @@ import org.garen.pitaya.swagger.model.THrVo;
 import org.garen.pitaya.util.TransferUtil;
 import org.garen.pitaya.valid.THrValid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,9 +25,27 @@ import javax.validation.Valid;
 @RequestMapping(value = "/api/tHr")
 public class THrController extends BaseModel {
     @Autowired
+    Tid tid;
+    @Autowired
     THrValid tHrValid;
     @Autowired
     THrManage tHrManage;
+    @Value("${increment.path}")
+    private String INCREMENT_PATH;
+
+    @ApiOperation(value = "获取新的人员ID", notes = "获取新的人员ID")
+    @RequestMapping(value = "/getId", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    ResponseEntity<ResponseModel> getId(){
+        String id = tid.getTHrId();
+        return new ResponseEntity<ResponseModel>(successModel("查询", id), HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "获取新的工号", notes = "获取新的工号")
+    @RequestMapping(value = "/getEmpNo", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    ResponseEntity<ResponseModel> getEmpNo(){
+        String empNo = tid.getEmpNo(INCREMENT_PATH);
+        return new ResponseEntity<ResponseModel>(successModel("查询", empNo), HttpStatus.OK);
+    }
 
     @ApiOperation(value = "新增", notes = "新增 ")
     @RequestMapping(value = "/save", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)

@@ -49,7 +49,7 @@ public class LoginFilter extends BaseModel implements Filter {
 
 	private void loginFail(HttpServletResponse res) throws IOException {
 		LoginDTO loginDTO = new LoginDTO();
-		loginDTO.setCode("400");
+		loginDTO.setCode("401");
 		loginDTO.setMessage("未登录");
 		String json = new JsonMapper().toJson(loginDTO);
 		res.getWriter().write(json);

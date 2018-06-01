@@ -2,6 +2,7 @@ package org.garen.pitaya.swagger.api;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.garen.pitaya.code.Tid;
 import org.garen.pitaya.mybatis.domain.TOrg;
 import org.garen.pitaya.mybatis.domain.TOrgDTO;
 import org.garen.pitaya.service.TOrgManage;
@@ -22,9 +23,18 @@ import javax.validation.Valid;
 @RequestMapping(value = "/api/tOrg")
 public class TOrgController extends BaseModel {
     @Autowired
+    Tid tid;
+    @Autowired
     TOrgValid tOrgValid;
     @Autowired
     TOrgManage tOrgManage;
+
+    @ApiOperation(value = "获取新的组织ID", notes = "获取新的组织ID")
+    @RequestMapping(value = "/getId", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    ResponseEntity<ResponseModel> getId(){
+        String id = tid.getTOrgId();
+        return new ResponseEntity<ResponseModel>(successModel("查询", id), HttpStatus.OK);
+    }
 
     @ApiOperation(value = "查询整棵树", notes = "查询整棵树")
     @RequestMapping(value = "/getTree", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)

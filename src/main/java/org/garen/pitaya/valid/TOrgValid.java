@@ -23,9 +23,14 @@ public class TOrgValid {
         if(tOrgVo == null){
             throw new BadRequestException("参数对象不能为空");
         }
-        // 非空验证：编码
+        // 非空验证：ID
         if(StringUtils.isBlank(tOrgVo.getId())){
             throw new BadRequestException("节点编码不能为空");
+        }
+        // 唯一性验证：ID
+        TOrg byId = tOrgManage.getById(tOrgVo.getId());
+        if(byId != null){
+            throw new BadRequestException("ID已存在");
         }
         // 非空验证：名称
         if(StringUtils.isBlank(tOrgVo.getLabel())){
@@ -37,8 +42,8 @@ public class TOrgValid {
         }
         // 唯一性校验: 父节点必需存在
         if(!tOrgManage.ROOT_NODE.equals(tOrgVo.getParentId())){
-            TOrg byId = tOrgManage.getById(tOrgVo.getParentId());
-            if(byId == null){
+            TOrg byParentId = tOrgManage.getById(tOrgVo.getParentId());
+            if(byParentId == null){
                 throw new BadRequestException("父节点不存在");
             }
         }
