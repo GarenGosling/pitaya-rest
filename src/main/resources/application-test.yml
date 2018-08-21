@@ -24,4 +24,4 @@ server:
 #    basedir: /home/tomcat-cas
 
 increment:
-  path: E:\obj_store\
+  path: /Users/liuxueliang/work/obj_store/

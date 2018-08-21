@@ -3,7 +3,6 @@ package org.garen;
 
 import org.garen.pitaya.filter.LoginFilter;
 import org.garen.pitaya.swagger.api.ApiOriginFilter;
-import org.garen.pitaya.swagger.api.ApiOriginFilter;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
